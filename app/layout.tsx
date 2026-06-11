@@ -1,22 +1,14 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { RoleProvider } from "@/lib/role-context";
 
 export const metadata: Metadata = {
-  title: "Creators Hub — Kontent platformasi",
-  description: "Kontent yaratuvchilar va brendlar uchun platforma. Portfolio, vakansiyalar, hackatonlar.",
+  title: "Creators Hub",
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="ru" className="h-full">
-      <body className="min-h-full antialiased" style={{ backgroundColor: "#F2F2F7", color: "#000" }}>
-        <RoleProvider>{children}</RoleProvider>
-      </body>
+    <html lang="ru">
+      <body>{children}</body>
     </html>
   );
 }
