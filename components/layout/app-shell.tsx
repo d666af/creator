@@ -8,80 +8,93 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const { role, setRole } = useRole();
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: "#F5F4F0" }}>
-      {/* Top bar */}
+    <div style={{ minHeight: "100svh", backgroundColor: "#F2F2F7" }}>
+      {/* Nav bar */}
       <header
-        className="sticky top-0 z-40 flex items-center justify-between px-4"
         style={{
-          height: "56px",
-          backgroundColor: "#FFFFFF",
-          borderBottom: "1px solid rgba(0,0,0,0.07)",
+          position: "sticky",
+          top: 0,
+          zIndex: 40,
+          height: 52,
           paddingTop: "env(safe-area-inset-top)",
+          backgroundColor: "rgba(242,242,247,0.92)",
+          backdropFilter: "blur(20px) saturate(180%)",
+          WebkitBackdropFilter: "blur(20px) saturate(180%)",
+          borderBottom: "0.5px solid rgba(60,60,67,0.18)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          padding: "0 16px",
+          gap: 12,
         }}
       >
         {/* Logo */}
-        <div className="flex items-center gap-2">
-          <div
-            className="flex h-8 w-8 items-center justify-center rounded-xl text-[13px] font-extrabold text-white"
-            style={{ backgroundColor: "#1C1A17" }}
-          >
-            CH
-          </div>
-        </div>
+        <span style={{ fontSize: 17, fontWeight: 700, color: "#000", letterSpacing: "-0.03em", minWidth: 28 }}>
+          CH
+        </span>
 
-        {/* Role switcher */}
+        {/* iOS-style segmented control */}
         <div
-          className="flex rounded-full p-[3px]"
-          style={{ backgroundColor: "#EDECE8" }}
+          style={{
+            display: "flex",
+            backgroundColor: "rgba(118,118,128,0.12)",
+            borderRadius: 9,
+            padding: 2,
+            gap: 2,
+          }}
         >
-          <button
-            onClick={() => setRole("creator")}
-            className="rounded-full px-4 py-[7px] text-[13px] font-semibold transition-all duration-200"
-            style={{
-              backgroundColor: role === "creator" ? "#A07850" : "transparent",
-              color: role === "creator" ? "#FFFFFF" : "#74706A",
-            }}
-          >
-            Creator
-          </button>
-          <button
-            onClick={() => setRole("b2b")}
-            className="rounded-full px-4 py-[7px] text-[13px] font-semibold transition-all duration-200"
-            style={{
-              backgroundColor: role === "b2b" ? "#2563EB" : "transparent",
-              color: role === "b2b" ? "#FFFFFF" : "#74706A",
-            }}
-          >
-            B2B
-          </button>
+          {(["creator", "b2b"] as const).map((r) => (
+            <button
+              key={r}
+              onClick={() => setRole(r)}
+              style={{
+                padding: "5px 16px",
+                borderRadius: 7,
+                fontSize: 13,
+                fontWeight: 600,
+                letterSpacing: "-0.01em",
+                transition: "all 0.2s",
+                backgroundColor: role === r ? "#fff" : "transparent",
+                color: role === r ? "#000" : "rgba(60,60,67,0.6)",
+                boxShadow: role === r ? "0 1px 4px rgba(0,0,0,0.12), 0 0 0 0.5px rgba(0,0,0,0.04)" : "none",
+              }}
+            >
+              {r === "creator" ? "Creator" : "B2B"}
+            </button>
+          ))}
         </div>
 
-        {/* Right actions */}
-        <div className="flex items-center gap-2.5">
-          <button
-            className="relative flex h-9 w-9 items-center justify-center rounded-full"
-            style={{ backgroundColor: "#F5F4F0" }}
-          >
-            <Bell size={18} color="#1C1A17" strokeWidth={1.8} />
-            <span
-              className="absolute right-2 top-2 h-[7px] w-[7px] rounded-full"
-              style={{ backgroundColor: "#A07850" }}
-            />
-          </button>
-          <button
-            className="flex h-9 w-9 items-center justify-center rounded-full text-[12px] font-bold"
-            style={{ backgroundColor: "#F0E6D8", color: "#A07850" }}
-          >
-            {role === "creator" ? "JY" : "MU"}
-          </button>
-        </div>
+        {/* Bell */}
+        <button
+          style={{
+            position: "relative",
+            width: 32,
+            height: 32,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            borderRadius: "50%",
+            backgroundColor: "rgba(118,118,128,0.12)",
+          }}
+        >
+          <Bell size={17} color="#000" strokeWidth={1.8} />
+          <span
+            style={{
+              position: "absolute",
+              top: 6,
+              right: 6,
+              width: 7,
+              height: 7,
+              borderRadius: "50%",
+              backgroundColor: role === "creator" ? "#AF52DE" : "#007AFF",
+              border: "1.5px solid rgba(242,242,247,0.9)",
+            }}
+          />
+        </button>
       </header>
 
-      {/* Page content */}
-      <main
-        className="mx-auto max-w-2xl animate-fade-in"
-        style={{ paddingBottom: "calc(68px + env(safe-area-inset-bottom))" }}
-      >
+      {/* Content */}
+      <main className="mx-auto max-w-2xl animate-fade-in" style={{ paddingBottom: "calc(62px + env(safe-area-inset-bottom))" }}>
         {children}
       </main>
 

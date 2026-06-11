@@ -3,62 +3,48 @@
 import { useState } from "react";
 import Link from "next/link";
 import { AppShell } from "@/components/layout/app-shell";
-import { mockCreators, mockPosts } from "@/lib/mock-data";
-import {
-  Plus, Heart, MessageCircle, Share2, Bookmark,
-  MoreHorizontal, Eye, Play,
-} from "lucide-react";
-import { useRole } from "@/lib/role-context";
+import { mockPosts } from "@/lib/mock-data";
+import { Heart, MessageCircle, Share2, Bookmark, MoreHorizontal, Play, Eye } from "lucide-react";
 
-const TABS = ["Барчаси", "Кейслар", "Саволлар", "Ревьюлар"] as const;
+const TABS = ["Все", "Кейсы", "Вопросы", "Ревью"] as const;
+type Tab = (typeof TABS)[number];
 
-const POST_TYPE_META = {
-  case:     { label: "Кейс",  bg: "#F0E7D8", color: "#8C6437" },
-  question: { label: "Савол", bg: "#EBF1FD", color: "#2557D6" },
-  review:   { label: "Ревью", bg: "#FDE8EC", color: "#C8183B" },
+const TYPE_MAP: Record<string, { label: string; color: string; bg: string }> = {
+  case:     { label: "Кейс",   color: "#AF52DE", bg: "rgba(175,82,222,0.1)"  },
+  question: { label: "Вопрос", color: "#007AFF", bg: "rgba(0,122,255,0.1)"   },
+  review:   { label: "Ревью",  color: "#FF3B30", bg: "rgba(255,59,48,0.1)"   },
 };
 
-export default function HomePage() {
-  const { role } = useRole();
-  const [tab, setTab] = useState(0);
-  const [liked, setLiked]   = useState<Set<string>>(new Set());
-  const [saved, setSaved]   = useState<Set<string>>(new Set());
+export default function FeedPage() {
+  const [tab, setTab]   = useState<Tab>("Все");
+  const [liked, setLiked] = useState<Set<string>>(new Set());
+  const [saved, setSaved] = useState<Set<string>>(new Set());
 
   const posts =
-    tab === 0 ? mockPosts :
-    tab === 1 ? mockPosts.filter((p) => p.type === "case") :
-    tab === 2 ? mockPosts.filter((p) => p.type === "question") :
-                mockPosts.filter((p) => p.type === "review");
-
-  const stories = [
-    { id: "add",  isAdd: true  },
-    ...mockCreators.slice(0, 7),
-  ];
+    tab === "Все"     ? mockPosts :
+    tab === "Кейсы"   ? mockPosts.filter((p) => p.type === "case")     :
+    tab === "Вопросы" ? mockPosts.filter((p) => p.type === "question") :
+                        mockPosts.filter((p) => p.type === "review");
 
   return (
     <AppShell>
-      {/* ── Stories ── */}
-      <div className="pt-4">
-        <div className="no-scrollbar flex gap-3.5 overflow-x-auto px-4 pb-4">
-          {stories.map((s: any) => (
-            <StoryBubble key={s.id} story={s} />
-          ))}
-        </div>
-      </div>
-
-      {/* ── Divider ── */}
-      <div className="mx-4" style={{ height: "1px", backgroundColor: "rgba(0,0,0,0.06)" }} />
-
-      {/* ── Tabs ── */}
+      {/* Filter tabs */}
       <div className="no-scrollbar flex gap-2 overflow-x-auto px-4 py-3">
-        {TABS.map((t, i) => (
+        {TABS.map((t) => (
           <button
             key={t}
-            onClick={() => setTab(i)}
-            className="shrink-0 rounded-full px-4 py-[9px] text-[13px] font-semibold whitespace-nowrap transition-all duration-150"
+            onClick={() => setTab(t)}
             style={{
-              backgroundColor: tab === i ? "#1C1A17" : "rgba(0,0,0,0.05)",
-              color:           tab === i ? "#FFFFFF"  : "#74706A",
+              padding: "8px 16px",
+              borderRadius: 100,
+              fontSize: 14,
+              fontWeight: 600,
+              letterSpacing: "-0.01em",
+              whiteSpace: "nowrap",
+              flexShrink: 0,
+              transition: "all 0.15s",
+              backgroundColor: tab === t ? "#000" : "rgba(118,118,128,0.12)",
+              color:           tab === t ? "#fff" : "rgba(60,60,67,0.65)",
             }}
           >
             {t}
@@ -66,17 +52,17 @@ export default function HomePage() {
         ))}
       </div>
 
-      {/* ── Feed ── */}
-      <div className="flex flex-col gap-3 px-4 pb-4">
+      {/* Posts */}
+      <div style={{ display: "flex", flexDirection: "column", gap: 12, padding: "0 16px 16px" }}>
         {posts.map((post, i) => (
           <PostCard
             key={post.id}
             post={post}
-            delay={i * 55}
+            delay={i * 50}
             isLiked={liked.has(post.id)}
             isSaved={saved.has(post.id)}
-            onLike={() => setLiked((prev) => toggle(prev, post.id))}
-            onSave={() => setSaved((prev) => toggle(prev, post.id))}
+            onLike={() => setLiked((p) => toggle(p, post.id))}
+            onSave={() => setSaved((p) => toggle(p, post.id))}
           />
         ))}
       </div>
@@ -84,57 +70,13 @@ export default function HomePage() {
   );
 }
 
-/* ──────────── helpers ──────────── */
-
-function toggle(set: Set<string>, id: string): Set<string> {
-  const next = new Set(set);
-  next.has(id) ? next.delete(id) : next.add(id);
-  return next;
+function toggle(s: Set<string>, id: string) {
+  const n = new Set(s);
+  n.has(id) ? n.delete(id) : n.add(id);
+  return n;
 }
 
-/* ──────────── Story bubble ──────────── */
-
-function StoryBubble({ story }: { story: any }) {
-  if (story.isAdd) {
-    return (
-      <div className="flex shrink-0 flex-col items-center gap-1.5 cursor-pointer">
-        <div
-          className="flex h-[58px] w-[58px] items-center justify-center rounded-full"
-          style={{ border: "2px dashed rgba(160,120,80,0.35)", backgroundColor: "#FDFCF9" }}
-        >
-          <Plus size={18} color="#A07850" />
-        </div>
-        <span className="text-[10px] font-medium" style={{ color: "#A8A39B" }}>
-          Сторис
-        </span>
-      </div>
-    );
-  }
-
-  return (
-    <Link href={`/profile/${story.id}`} className="flex shrink-0 flex-col items-center gap-1.5">
-      <div
-        className="h-[58px] w-[58px] rounded-full p-[2.5px]"
-        style={{ background: "linear-gradient(135deg, #C4956A 0%, #E8C99A 50%, #A07850 100%)" }}
-      >
-        <div
-          className="flex h-full w-full items-center justify-center rounded-full text-[14px] font-bold"
-          style={{ backgroundColor: "#FDFCF9", border: "2px solid #FDFCF9", color: story.avatarColor }}
-        >
-          {story.avatar}
-        </div>
-      </div>
-      <span
-        className="max-w-[58px] truncate text-center text-[10px] font-medium"
-        style={{ color: "#74706A" }}
-      >
-        {story.name.split(" ")[0]}
-      </span>
-    </Link>
-  );
-}
-
-/* ──────────── Post card ──────────── */
+/* ── Post card ── */
 
 function PostCard({
   post, delay, isLiked, isSaved, onLike, onSave,
@@ -146,143 +88,222 @@ function PostCard({
   onLike: () => void;
   onSave: () => void;
 }) {
-  const meta = POST_TYPE_META[post.type];
+  const meta = TYPE_MAP[post.type];
 
   return (
-    <div
-      className="overflow-hidden rounded-2xl animate-fade-in"
+    <article
+      className="animate-fade-in"
       style={{
-        backgroundColor: "#FFFFFF",
-        border: "1px solid rgba(0,0,0,0.06)",
+        backgroundColor: "#fff",
+        borderRadius: 16,
+        overflow: "hidden",
+        boxShadow: "0 2px 12px rgba(0,0,0,0.07), 0 0 0 0.5px rgba(0,0,0,0.04)",
         animationDelay: `${delay}ms`,
       }}
     >
-      {/* Header */}
-      <div className="flex items-center gap-3 px-4 pt-4 pb-3">
-        <div
-          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[13px] font-bold"
-          style={{ backgroundColor: post.author.color + "22", color: post.author.color }}
-        >
-          {post.author.avatar}
-        </div>
+      {/* ── Header ── */}
+      <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "14px 16px 10px" }}>
+        {/* Avatar */}
+        <Link href="#" style={{ flexShrink: 0 }}>
+          <div
+            style={{
+              width: 38,
+              height: 38,
+              borderRadius: "50%",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: 13,
+              fontWeight: 700,
+              color: post.author.color,
+              backgroundColor: post.author.color + "1A",
+            }}
+          >
+            {post.author.avatar}
+          </div>
+        </Link>
 
-        <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-2">
-            <span className="truncate text-[14px] font-semibold" style={{ color: "#1C1A17" }}>
+        {/* Name / meta */}
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            <span style={{ fontSize: 14, fontWeight: 600, color: "#000", letterSpacing: "-0.01em" }}>
               {post.author.name}
             </span>
             {post.author.isPro && (
               <span
-                className="shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-bold"
-                style={{ backgroundColor: "#A07850", color: "#FFFFFF" }}
+                style={{
+                  fontSize: 10,
+                  fontWeight: 700,
+                  color: "#fff",
+                  backgroundColor: "#AF52DE",
+                  padding: "1px 6px",
+                  borderRadius: 4,
+                  letterSpacing: "0.01em",
+                }}
               >
                 PRO
               </span>
             )}
           </div>
-          <div className="flex items-center gap-1.5 mt-0.5">
-            <span className="text-[12px]" style={{ color: "#74706A" }}>
-              {post.author.specialization}
-            </span>
-            <span style={{ color: "#C8C3BC" }}>·</span>
-            <span className="text-[12px]" style={{ color: "#A8A39B" }}>
-              {post.postedAt}
-            </span>
+          <div style={{ fontSize: 12, color: "rgba(60,60,67,0.55)", marginTop: 1, letterSpacing: "-0.01em" }}>
+            {post.author.specialization} &middot; {post.postedAt}
           </div>
         </div>
 
-        <button className="flex h-8 w-8 items-center justify-center rounded-full" style={{ color: "#B0A99F" }}>
+        <button style={{ padding: 4, color: "rgba(60,60,67,0.4)" }}>
           <MoreHorizontal size={18} />
         </button>
       </div>
 
-      {/* Type badge + title */}
-      <div className="px-4 pb-2.5">
+      {/* ── Body ── */}
+      <div style={{ padding: "0 16px 12px" }}>
+        {/* Type badge */}
         <span
-          className="inline-block rounded-full px-2.5 py-[5px] text-[11px] font-semibold"
-          style={{ backgroundColor: meta.bg, color: meta.color }}
+          style={{
+            display: "inline-block",
+            fontSize: 12,
+            fontWeight: 600,
+            color: meta.color,
+            backgroundColor: meta.bg,
+            padding: "3px 10px",
+            borderRadius: 6,
+            marginBottom: 8,
+            letterSpacing: "-0.01em",
+          }}
         >
           {meta.label}
         </span>
-        <p className="mt-2 text-[15px] font-semibold leading-snug" style={{ color: "#1C1A17" }}>
+
+        {/* Title */}
+        <p style={{ fontSize: 16, fontWeight: 700, color: "#000", lineHeight: 1.3, letterSpacing: "-0.02em", margin: 0 }}>
           {post.title}
         </p>
-      </div>
 
-      {/* Body text */}
-      <div className="px-4 pb-3">
-        <p className="text-[14px] leading-relaxed" style={{ color: "#4A4640" }}>
+        {/* Content */}
+        <p
+          style={{
+            fontSize: 15,
+            fontWeight: 400,
+            color: "rgba(60,60,67,0.8)",
+            lineHeight: 1.5,
+            marginTop: 6,
+            display: "-webkit-box",
+            WebkitLineClamp: 3,
+            WebkitBoxOrient: "vertical",
+            overflow: "hidden",
+          }}
+        >
           {post.content}
         </p>
       </div>
 
-      {/* Video preview */}
+      {/* ── Video preview ── */}
       {post.videoColor && (
-        <div className="px-4 pb-3">
+        <div style={{ padding: "0 16px 12px" }}>
           <div
-            className="relative w-full overflow-hidden rounded-[14px]"
             style={{
+              position: "relative",
+              width: "100%",
               aspectRatio: "16/9",
-              background: `linear-gradient(135deg, ${post.videoColor}1A, ${post.videoColor}40)`,
+              borderRadius: 12,
+              background: `linear-gradient(135deg, ${post.videoColor}18 0%, ${post.videoColor}38 100%)`,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              overflow: "hidden",
             }}
           >
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div
-                className="flex h-14 w-14 items-center justify-center rounded-full"
-                style={{ backgroundColor: post.videoColor + "33" }}
-              >
-                <Play size={22} color={post.videoColor} fill={post.videoColor} />
-              </div>
+            <div
+              style={{
+                width: 48,
+                height: 48,
+                borderRadius: "50%",
+                backgroundColor: post.videoColor + "30",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <Play size={20} color={post.videoColor} fill={post.videoColor} />
             </div>
             {post.videoAspect === "9:16" && (
-              <div
-                className="absolute left-2.5 top-2.5 rounded-full px-2 py-1 text-[11px] font-semibold text-white"
-                style={{ backgroundColor: "rgba(0,0,0,0.45)" }}
+              <span
+                style={{
+                  position: "absolute",
+                  top: 10,
+                  left: 10,
+                  fontSize: 11,
+                  fontWeight: 600,
+                  color: "#fff",
+                  backgroundColor: "rgba(0,0,0,0.4)",
+                  padding: "3px 8px",
+                  borderRadius: 6,
+                }}
               >
                 Reels
-              </div>
+              </span>
             )}
             {post.views && (
               <div
-                className="absolute bottom-2.5 right-2.5 flex items-center gap-1 rounded-full px-2 py-1"
-                style={{ backgroundColor: "rgba(0,0,0,0.45)" }}
+                style={{
+                  position: "absolute",
+                  bottom: 10,
+                  right: 10,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 4,
+                  backgroundColor: "rgba(0,0,0,0.4)",
+                  padding: "3px 8px",
+                  borderRadius: 6,
+                }}
               >
-                <Eye size={11} color="white" />
-                <span className="text-[11px] font-semibold text-white">{post.views}</span>
+                <Eye size={11} color="#fff" />
+                <span style={{ fontSize: 11, fontWeight: 600, color: "#fff" }}>{post.views}</span>
               </div>
             )}
           </div>
         </div>
       )}
 
-      {/* Review score pills */}
+      {/* ── Review scores ── */}
       {post.reviewScores && (
-        <div className="flex gap-2 px-4 pb-3">
-          {Object.entries(post.reviewScores).map(([key, val]) => (
+        <div style={{ display: "flex", gap: 8, padding: "0 16px 12px" }}>
+          {[
+            { key: "Монтаж",   val: post.reviewScores.montage   },
+            { key: "Нарратив", val: post.reviewScores.scenario  },
+            { key: "Цвет",     val: post.reviewScores.color     },
+          ].map(({ key, val }) => (
             <div
               key={key}
-              className="flex-1 rounded-xl px-2 py-2 text-center"
-              style={{ backgroundColor: "#F8F6F2" }}
+              style={{
+                flex: 1,
+                backgroundColor: "#F2F2F7",
+                borderRadius: 10,
+                padding: "8px 6px",
+                textAlign: "center",
+              }}
             >
-              <div className="text-[14px] font-bold" style={{ color: "#1C1A17" }}>
-                {val as number}
-              </div>
-              <div className="text-[10px]" style={{ color: "#74706A" }}>
-                {key === "montage" ? "Монтаж" : key === "scenario" ? "Нарратив" : "Ранг"}
-              </div>
+              <div style={{ fontSize: 16, fontWeight: 700, color: "#000" }}>{val}</div>
+              <div style={{ fontSize: 11, color: "rgba(60,60,67,0.5)", marginTop: 1 }}>{key}</div>
             </div>
           ))}
         </div>
       )}
 
-      {/* Tags */}
+      {/* ── Tags ── */}
       {post.tags && post.tags.length > 0 && (
-        <div className="flex flex-wrap gap-1.5 px-4 pb-3">
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 6, padding: "0 16px 12px" }}>
           {post.tags.map((tag: string) => (
             <span
               key={tag}
-              className="rounded-full px-2.5 py-[5px] text-[12px] font-medium"
-              style={{ backgroundColor: "#F0E7D8", color: "#8C6437" }}
+              style={{
+                fontSize: 13,
+                fontWeight: 500,
+                color: "rgba(60,60,67,0.55)",
+                backgroundColor: "rgba(118,118,128,0.1)",
+                padding: "4px 10px",
+                borderRadius: 6,
+              }}
             >
               #{tag}
             </span>
@@ -290,41 +311,64 @@ function PostCard({
         </div>
       )}
 
-      {/* Action bar */}
+      {/* ── Actions ── */}
       <div
-        className="flex items-center justify-between px-4 py-3"
-        style={{ borderTop: "1px solid rgba(0,0,0,0.05)" }}
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          padding: "10px 16px 14px",
+          borderTop: "0.5px solid rgba(60,60,67,0.12)",
+        }}
       >
-        <div className="flex items-center gap-5">
-          <button
+        <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
+          <ActionBtn
+            icon={<Heart size={18} fill={isLiked ? "#FF3B30" : "none"} strokeWidth={2} />}
+            label={String(post.likes + (isLiked ? 1 : 0))}
+            color={isLiked ? "#FF3B30" : "rgba(60,60,67,0.45)"}
             onClick={onLike}
-            className="flex items-center gap-1.5 transition-transform active:scale-90"
-            style={{ color: isLiked ? "#C8183B" : "#B0A99F" }}
-          >
-            <Heart size={18} fill={isLiked ? "#C8183B" : "none"} strokeWidth={2} />
-            <span className="text-[13px] font-medium">
-              {post.likes + (isLiked ? 1 : 0)}
-            </span>
-          </button>
-
-          <button className="flex items-center gap-1.5" style={{ color: "#B0A99F" }}>
-            <MessageCircle size={18} strokeWidth={2} />
-            <span className="text-[13px] font-medium">{post.comments}</span>
-          </button>
-
-          <button style={{ color: "#B0A99F" }}>
-            <Share2 size={18} strokeWidth={2} />
-          </button>
+          />
+          <ActionBtn
+            icon={<MessageCircle size={18} strokeWidth={2} />}
+            label={String(post.comments)}
+            color="rgba(60,60,67,0.45)"
+          />
+          <ActionBtn
+            icon={<Share2 size={18} strokeWidth={2} />}
+            color="rgba(60,60,67,0.45)"
+          />
         </div>
-
-        <button
-          onClick={onSave}
-          className="transition-transform active:scale-90"
-          style={{ color: isSaved ? "#A07850" : "#B0A99F" }}
-        >
-          <Bookmark size={18} fill={isSaved ? "#A07850" : "none"} strokeWidth={2} />
+        <button onClick={onSave} style={{ padding: 4, color: isSaved ? "#AF52DE" : "rgba(60,60,67,0.45)", transition: "color 0.15s" }}>
+          <Bookmark size={18} fill={isSaved ? "#AF52DE" : "none"} strokeWidth={2} />
         </button>
       </div>
-    </div>
+    </article>
+  );
+}
+
+function ActionBtn({
+  icon, label, color, onClick,
+}: {
+  icon: React.ReactNode;
+  label?: string;
+  color: string;
+  onClick?: () => void;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: 5,
+        color,
+        fontSize: 14,
+        fontWeight: 500,
+        transition: "color 0.15s",
+      }}
+    >
+      {icon}
+      {label && <span>{label}</span>}
+    </button>
   );
 }

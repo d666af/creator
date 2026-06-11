@@ -13,8 +13,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="uz" className="h-full">
-      <body className="min-h-full antialiased" style={{ backgroundColor: "#F5F4F0", color: "#1C1A17" }}>
+    <html lang="ru" className="h-full">
+      <body className="min-h-full antialiased" style={{ backgroundColor: "#F2F2F7", color: "#000" }}>
         <RoleProvider>{children}</RoleProvider>
       </body>
     </html>
