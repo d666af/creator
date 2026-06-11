@@ -1,244 +1,187 @@
 "use client";
+
 import { useState } from "react";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, ArrowRight, Check, Camera, Scissors, FileText, BarChart2, Users, User } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useRole } from "@/lib/role-context";
+import { Camera, Building2, ChevronLeft, Send, Check } from "lucide-react";
+import { cn } from "@/lib/utils";
 
-type Step = "login" | "role" | "specs" | "done";
-type Role = "creator" | "client";
+type Step = 1 | 2;
+type Choice = "creator" | "b2b" | null;
 
-const specializations = [
-  { id: "mobilographer", label: "Мобилограф", icon: Camera },
-  { id: "editor", label: "Монтажёр", icon: Scissors },
-  { id: "scriptwriter", label: "Сценарист", icon: FileText },
-  { id: "producer", label: "Продюсер", icon: Users },
-  { id: "smm", label: "SMM-специалист", icon: BarChart2 },
-];
+const specs = ["Мобилограф", "Монтажёр", "Сценарист", "SMM", "Таргетолог", "Продюсер", "Колорист", "Reels-мейкер"];
 
 export default function AuthPage() {
-  const [step, setStep] = useState<Step>("login");
-  const [role, setRole] = useState<Role | null>(null);
-  const [selectedSpecs, setSelectedSpecs] = useState<string[]>([]);
-  const [city, setCity] = useState("");
+  const router = useRouter();
+  const { setRole } = useRole();
+  const [step, setStep] = useState<Step>(1);
+  const [choice, setChoice] = useState<Choice>(null);
+  const [selected, setSelected] = useState<string[]>([]);
+  const [brief, setBrief] = useState("");
 
-  const toggleSpec = (id: string) => {
-    setSelectedSpecs((prev) =>
-      prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id]
-    );
+  const pick = (c: "creator" | "b2b") => {
+    setChoice(c);
+    setRole(c);
+    setStep(2);
   };
 
+  const toggleSpec = (s: string) =>
+    setSelected((prev) => (prev.includes(s) ? prev.filter((x) => x !== s) : [...prev, s]));
+
+  const accent = choice === "b2b" ? "#0A84FF" : "#BF5AF2";
+
   return (
-    <div className="min-h-screen bg-[#F9F9FB] flex items-center justify-center px-4">
-      <div className="w-full max-w-md">
-        {/* Logo */}
-        <div className="flex items-center justify-center gap-2.5 mb-10">
-          <div className="w-9 h-9 bg-[#111111] rounded-[12px] flex items-center justify-center">
-            <span className="text-white text-sm font-bold">CH</span>
-          </div>
-          <span
-            className="text-lg font-bold text-[#111111]"
-            style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
-          >
-            Creators Hub
-          </span>
-        </div>
+    <div className="relative flex min-h-screen flex-col overflow-hidden bg-black px-6">
+      {/* Animated blobs */}
+      <div className="pointer-events-none absolute -left-20 top-10 h-64 w-64 rounded-full bg-[#BF5AF2]/30 blur-3xl animate-blob" />
+      <div className="pointer-events-none absolute -right-16 top-40 h-72 w-72 rounded-full bg-[#0A84FF]/30 blur-3xl animate-blob" style={{ animationDelay: "3s" }} />
+      <div className="pointer-events-none absolute bottom-0 left-1/3 h-64 w-64 rounded-full bg-[#FF2D55]/20 blur-3xl animate-blob" style={{ animationDelay: "6s" }} />
 
-        <div className="bg-white rounded-[20px] border border-[#E5E7EB] shadow-[0_4px_20px_rgba(0,0,0,0.06)] p-8 animate-scale-in">
-          {step === "login" && (
-            <div>
-              <h1
-                className="text-2xl font-bold text-[#111111] mb-2"
-                style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
-              >
-                Добро пожаловать
-              </h1>
-              <p className="text-[#6B7280] text-sm mb-8">
-                Войдите, чтобы начать работу на платформе
-              </p>
-
-              <button
-                onClick={() => setStep("role")}
-                className="w-full flex items-center gap-4 bg-[#F9F9FB] hover:bg-[#F3F4F6] border border-[#E5E7EB] rounded-[14px] px-5 py-4 transition-all duration-150 cursor-pointer group"
-              >
-                <div className="w-10 h-10 bg-[#2AABEE] rounded-[10px] flex items-center justify-center flex-shrink-0">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
-                    <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.562 8.247l-1.97 9.289c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12l-6.871 4.326-2.962-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.833.932z" />
-                  </svg>
-                </div>
-                <div className="text-left flex-1">
-                  <p className="font-semibold text-[#111111] text-sm">Войти через Telegram</p>
-                  <p className="text-xs text-[#6B7280]">Быстро и безопасно</p>
-                </div>
-                <ArrowRight size={16} className="text-[#6B7280] group-hover:text-[#111111] transition-colors" />
-              </button>
-
-              <div className="mt-6 pt-6 border-t border-[#F3F4F6]">
-                <p className="text-xs text-center text-[#6B7280]">
-                  Регистрируясь, вы принимаете{" "}
-                  <a href="#" className="text-[#4F46E5] hover:underline">условия использования</a>
-                </p>
-              </div>
-            </div>
+      <div className="relative z-10 flex flex-1 flex-col">
+        {/* Header */}
+        <div className="flex items-center justify-between pt-12">
+          {step === 2 ? (
+            <button onClick={() => setStep(1)} className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-white">
+              <ChevronLeft size={20} />
+            </button>
+          ) : (
+            <div className="h-9 w-9" />
           )}
-
-          {step === "role" && (
-            <div>
-              <button
-                onClick={() => setStep("login")}
-                className="flex items-center gap-1.5 text-sm text-[#6B7280] hover:text-[#111111] mb-6 transition-colors cursor-pointer"
-              >
-                <ArrowLeft size={14} /> Назад
-              </button>
-
-              <h1
-                className="text-2xl font-bold text-[#111111] mb-2"
-                style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
-              >
-                Кто вы на платформе?
-              </h1>
-              <p className="text-[#6B7280] text-sm mb-6">
-                Выберите роль — это поможет нам настроить интерфейс
-              </p>
-
-              <div className="space-y-3">
-                <button
-                  onClick={() => { setRole("creator"); setStep("specs"); }}
-                  className={`w-full flex items-start gap-4 border rounded-[14px] px-5 py-4 transition-all duration-150 cursor-pointer text-left ${
-                    role === "creator"
-                      ? "border-[#111111] bg-[#F9F9FB]"
-                      : "border-[#E5E7EB] hover:border-[#D1D5DB]"
-                  }`}
-                >
-                  <div className="w-10 h-10 bg-[#EEF2FF] rounded-[10px] flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <Camera size={18} className="text-[#4F46E5]" />
-                  </div>
-                  <div>
-                    <p className="font-semibold text-[#111111] text-sm">Я исполнитель</p>
-                    <p className="text-xs text-[#6B7280] mt-0.5">Создаю контент, ищу заказы, развиваю портфолио</p>
-                  </div>
-                </button>
-
-                <button
-                  onClick={() => { setRole("client"); setStep("done"); }}
-                  className={`w-full flex items-start gap-4 border rounded-[14px] px-5 py-4 transition-all duration-150 cursor-pointer text-left ${
-                    role === "client"
-                      ? "border-[#111111] bg-[#F9F9FB]"
-                      : "border-[#E5E7EB] hover:border-[#D1D5DB]"
-                  }`}
-                >
-                  <div className="w-10 h-10 bg-[#ECFDF5] rounded-[10px] flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <User size={18} className="text-[#059669]" />
-                  </div>
-                  <div>
-                    <p className="font-semibold text-[#111111] text-sm">Я заказчик</p>
-                    <p className="text-xs text-[#6B7280] mt-0.5">Ищу специалистов, публикую вакансии, нахожу команду</p>
-                  </div>
-                </button>
-              </div>
-            </div>
-          )}
-
-          {step === "specs" && (
-            <div>
-              <button
-                onClick={() => setStep("role")}
-                className="flex items-center gap-1.5 text-sm text-[#6B7280] hover:text-[#111111] mb-6 transition-colors cursor-pointer"
-              >
-                <ArrowLeft size={14} /> Назад
-              </button>
-
-              <h1
-                className="text-2xl font-bold text-[#111111] mb-2"
-                style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
-              >
-                Ваша специализация
-              </h1>
-              <p className="text-[#6B7280] text-sm mb-6">
-                Выберите одну или несколько — можно изменить позже
-              </p>
-
-              <div className="grid grid-cols-2 gap-2 mb-6">
-                {specializations.map(({ id, label, icon: Icon }) => (
-                  <button
-                    key={id}
-                    onClick={() => toggleSpec(id)}
-                    className={`flex items-center gap-2.5 px-3.5 py-3 rounded-[12px] border text-sm font-medium transition-all duration-150 cursor-pointer ${
-                      selectedSpecs.includes(id)
-                        ? "border-[#111111] bg-[#111111] text-white"
-                        : "border-[#E5E7EB] text-[#6B7280] hover:border-[#D1D5DB] hover:text-[#111111]"
-                    }`}
-                  >
-                    <Icon size={15} />
-                    {label}
-                    {selectedSpecs.includes(id) && <Check size={13} className="ml-auto" />}
-                  </button>
-                ))}
-              </div>
-
-              <div className="mb-6">
-                <label className="text-sm font-medium text-[#111111] block mb-2">Город работы</label>
-                <input
-                  type="text"
-                  placeholder="Например: Москва"
-                  value={city}
-                  onChange={(e) => setCity(e.target.value)}
-                  className="w-full px-4 py-3 rounded-[12px] border border-[#E5E7EB] text-sm text-[#111111] placeholder:text-[#9CA3AF] focus:outline-none focus:border-[#111111] transition-colors"
-                />
-              </div>
-
-              <Button
-                size="lg"
-                className="w-full"
-                disabled={selectedSpecs.length === 0}
-                onClick={() => setStep("done")}
-              >
-                Продолжить
-                <ArrowRight size={18} />
-              </Button>
-            </div>
-          )}
-
-          {step === "done" && (
-            <div className="text-center py-4">
-              <div className="w-16 h-16 bg-[#ECFDF5] rounded-full flex items-center justify-center mx-auto mb-5">
-                <Check size={28} className="text-[#059669]" />
-              </div>
-              <h1
-                className="text-2xl font-bold text-[#111111] mb-2"
-                style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
-              >
-                Всё готово!
-              </h1>
-              <p className="text-[#6B7280] text-sm mb-8">
-                Ваш профиль создан. Начните исследовать платформу.
-              </p>
-              <div className="space-y-3">
-                <Link href="/feed" className="block">
-                  <Button size="lg" className="w-full">Перейти в ленту</Button>
-                </Link>
-                <Link href="/profile/nikita-ivanov" className="block">
-                  <Button size="lg" variant="outline" className="w-full">Настроить профиль</Button>
-                </Link>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Step indicator */}
-        {step !== "done" && (
-          <div className="flex justify-center gap-2 mt-6">
-            {(["login", "role", "specs"] as Step[]).map((s, i) => (
-              <div
+          {/* Step dots */}
+          <div className="flex gap-2">
+            {[1, 2].map((s) => (
+              <span
                 key={s}
-                className={`h-1.5 rounded-full transition-all duration-300 ${
-                  s === step ? "w-6 bg-[#111111]" : "w-1.5 bg-[#E5E7EB]"
-                }`}
+                className="h-2 rounded-full transition-all"
+                style={{
+                  width: step === s ? 24 : 8,
+                  backgroundColor: step === s ? accent : "rgba(255,255,255,0.25)",
+                }}
               />
             ))}
+          </div>
+          <div className="h-9 w-9" />
+        </div>
+
+        {step === 1 && (
+          <div className="flex flex-1 flex-col justify-center">
+            <div className="mb-10 text-center">
+              <div
+                className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-[20px] text-2xl font-extrabold text-white"
+                style={{ background: "linear-gradient(135deg, #BF5AF2, #0A84FF)" }}
+              >
+                CH
+              </div>
+              <h1 className="text-3xl font-extrabold text-white">Creators Hub</h1>
+              <p className="mx-auto mt-2 max-w-xs text-sm text-[rgba(235,235,245,0.6)]">
+                Kontent yaratuvchilar va brendlar uchun platforma
+              </p>
+            </div>
+
+            <div className="flex flex-col gap-4">
+              <RoleCard
+                onClick={() => pick("creator")}
+                gradient="linear-gradient(135deg, #BF5AF2, #FF2D55)"
+                icon={<Camera size={26} className="text-white" />}
+                title="Men kreatorman"
+                subtitle="Kontent yarataman"
+              />
+              <RoleCard
+                onClick={() => pick("b2b")}
+                gradient="linear-gradient(135deg, #0A84FF, #5E5CE6)"
+                icon={<Building2 size={26} className="text-white" />}
+                title="Men buyurtmachiman"
+                subtitle="Jamoa izlayman"
+              />
+            </div>
+          </div>
+        )}
+
+        {step === 2 && (
+          <div className="flex flex-1 flex-col pt-8">
+            <h2 className="text-2xl font-extrabold text-white">
+              {choice === "creator" ? "Йўналишингиз?" : "Қисқача бриф"}
+            </h2>
+            <p className="mt-1 text-sm text-[rgba(235,235,245,0.6)]">
+              {choice === "creator"
+                ? "Бир ёки бир нечта мутахассислик танланг"
+                : "Қандай жамоа изляпсиз?"}
+            </p>
+
+            <div className="mt-6 flex-1">
+              {choice === "creator" ? (
+                <div className="flex flex-wrap gap-2.5">
+                  {specs.map((s) => {
+                    const on = selected.includes(s);
+                    return (
+                      <button
+                        key={s}
+                        onClick={() => toggleSpec(s)}
+                        className={cn(
+                          "flex items-center gap-1.5 rounded-full border px-4 py-2.5 text-sm font-semibold transition-all",
+                          on ? "border-transparent text-white" : "border-white/15 text-[rgba(235,235,245,0.7)]"
+                        )}
+                        style={on ? { backgroundColor: accent } : undefined}
+                      >
+                        {on && <Check size={14} />}
+                        {s}
+                      </button>
+                    );
+                  })}
+                </div>
+              ) : (
+                <textarea
+                  value={brief}
+                  onChange={(e) => setBrief(e.target.value)}
+                  rows={6}
+                  placeholder="Масалан: Fashion бренд учун доимий мобилограф излаймиз..."
+                  className="w-full resize-none rounded-2xl border border-white/[0.1] bg-white/[0.04] p-4 text-sm text-white outline-none placeholder:text-[rgba(235,235,245,0.4)]"
+                />
+              )}
+            </div>
+
+            <button
+              onClick={() => router.push("/")}
+              className="mb-10 flex w-full items-center justify-center gap-2 rounded-full py-4 text-base font-bold text-white"
+              style={{ background: "linear-gradient(135deg, #229ED9, #2AABEE)" }}
+            >
+              <Send size={18} /> Telegram орқали кириш
+            </button>
           </div>
         )}
       </div>
     </div>
+  );
+}
+
+function RoleCard({
+  onClick,
+  gradient,
+  icon,
+  title,
+  subtitle,
+}: {
+  onClick: () => void;
+  gradient: string;
+  icon: React.ReactNode;
+  title: string;
+  subtitle: string;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className="rounded-[24px] p-[1.5px] text-left transition-transform active:scale-[0.98]"
+      style={{ background: gradient }}
+    >
+      <div className="flex items-center gap-4 rounded-[23px] bg-black/85 p-5">
+        <div className="flex h-14 w-14 items-center justify-center rounded-2xl" style={{ background: gradient }}>
+          {icon}
+        </div>
+        <div>
+          <div className="text-lg font-bold text-white">{title}</div>
+          <div className="text-sm text-[rgba(235,235,245,0.6)]">{subtitle}</div>
+        </div>
+      </div>
+    </button>
   );
 }

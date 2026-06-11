@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 import { ButtonHTMLAttributes, forwardRef } from "react";
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: "primary" | "secondary" | "ghost" | "outline" | "accent";
+  variant?: "primary" | "secondary" | "ghost" | "outline" | "accent-creator" | "accent-b2b";
   size?: "sm" | "md" | "lg";
 }
 
@@ -13,20 +13,20 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       <button
         ref={ref}
         className={cn(
-          "inline-flex items-center justify-center font-medium transition-all duration-150 cursor-pointer select-none",
-          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
-          "disabled:opacity-50 disabled:cursor-not-allowed",
+          "inline-flex items-center justify-center font-semibold transition-all duration-150 cursor-pointer select-none active:scale-[0.97]",
+          "focus-visible:outline-none disabled:opacity-40 disabled:cursor-not-allowed",
           {
-            "bg-[#111111] text-white hover:bg-[#2a2a2a] focus-visible:ring-[#111111]": variant === "primary",
-            "bg-[#F3F4F6] text-[#111111] hover:bg-[#E5E7EB] focus-visible:ring-[#E5E7EB]": variant === "secondary",
-            "bg-transparent text-[#111111] hover:bg-[#F3F4F6] focus-visible:ring-[#E5E7EB]": variant === "ghost",
-            "bg-transparent border border-[#E5E7EB] text-[#111111] hover:border-[#111111] focus-visible:ring-[#111111]": variant === "outline",
-            "bg-[#4F46E5] text-white hover:bg-[#4338CA] focus-visible:ring-[#4F46E5]": variant === "accent",
+            "bg-white text-black hover:bg-white/90": variant === "primary",
+            "bg-[#2C2C2E] text-white hover:bg-[#3A3A3C]": variant === "secondary",
+            "bg-transparent text-white hover:bg-white/10": variant === "ghost",
+            "bg-transparent border border-white/20 text-white hover:bg-white/[0.06]": variant === "outline",
+            "bg-[#BF5AF2] text-white hover:bg-[#BF5AF2]/90": variant === "accent-creator",
+            "bg-[#0A84FF] text-white hover:bg-[#0A84FF]/90": variant === "accent-b2b",
           },
           {
-            "text-sm px-3 py-1.5 rounded-[10px] gap-1.5": size === "sm",
-            "text-sm px-4 py-2.5 rounded-[12px] gap-2": size === "md",
-            "text-base px-6 py-3 rounded-[14px] gap-2.5": size === "lg",
+            "text-sm px-3.5 py-2 rounded-full gap-1.5": size === "sm",
+            "text-sm px-5 py-2.5 rounded-full gap-2": size === "md",
+            "text-base px-6 py-3.5 rounded-full gap-2.5": size === "lg",
           },
           className
         )}

@@ -1,224 +1,142 @@
 "use client";
+
 import { useState } from "react";
 import Link from "next/link";
-import { Navbar } from "@/components/layout/navbar";
-import { Button } from "@/components/ui/button";
+import { useRole } from "@/lib/role-context";
+import { AppShell } from "@/components/layout/app-shell";
 import { Badge } from "@/components/ui/badge";
-import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { mockCreators } from "@/lib/mock-data";
-import { Search, MapPin, Star, Filter, Lock } from "lucide-react";
+import { Search, Star, SlidersHorizontal, MessageCircle } from "lucide-react";
+import { cn } from "@/lib/utils";
 
-type StatusFilter = "all" | "free" | "busy";
-
-const categories = ["Все", "Мобилография", "Монтаж", "Сценарий", "SMM", "Продюсер"];
+const categories = ["Барчаси", "Мобилограф", "Монтажёр", "Сценарист", "SMM", "Продюсер", "Колорист"];
 
 export default function SpecialistsPage() {
-  const [search, setSearch] = useState("");
-  const [activeCategory, setActiveCategory] = useState("Все");
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
-  const [showProFilter, setShowProFilter] = useState(false);
+  const { role } = useRole();
+  const [query, setQuery] = useState("");
+  const [cat, setCat] = useState("Барчаси");
 
   const filtered = mockCreators.filter((c) => {
-    const matchSearch = c.name.toLowerCase().includes(search.toLowerCase()) ||
-      c.specializations.some((s) => s.toLowerCase().includes(search.toLowerCase()));
-    const matchCat = activeCategory === "Все" || c.specializations.some((s) =>
-      s.toLowerCase().includes(activeCategory.toLowerCase())
-    );
-    const matchStatus = statusFilter === "all" || c.status === statusFilter;
-    return matchSearch && matchCat && matchStatus;
+    const matchQuery =
+      c.name.toLowerCase().includes(query.toLowerCase()) ||
+      c.specializations.some((s) => s.toLowerCase().includes(query.toLowerCase()));
+    const matchCat = cat === "Барчаси" || c.specializations.some((s) => s.includes(cat));
+    return matchQuery && matchCat;
   });
 
+  const pros = mockCreators.filter((c) => c.isPro);
+
   return (
-    <div className="min-h-screen bg-[#F9F9FB]">
-      <Navbar />
-
-      <div className="max-w-7xl mx-auto px-6 py-8">
-        <div className="flex items-start justify-between mb-8">
-          <div>
-            <h1
-              className="text-2xl font-bold text-[#111111]"
-              style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
-            >
-              Специалисты
-            </h1>
-            <p className="text-sm text-[#6B7280] mt-0.5">{filtered.length} из {mockCreators.length} профессионалов</p>
-          </div>
+    <AppShell>
+      <div className="px-4 pt-4">
+        {/* Search */}
+        <div className="flex items-center gap-2 rounded-full border border-white/[0.08] bg-[#1C1C1E] px-4 py-2.5">
+          <Search size={18} className="text-[rgba(235,235,245,0.4)]" />
+          <input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Мутахассис қидириш..."
+            className="w-full bg-transparent text-sm text-white outline-none placeholder:text-[rgba(235,235,245,0.4)]"
+          />
         </div>
 
-        {/* Search + filters */}
-        <div className="flex flex-col sm:flex-row gap-3 mb-5">
-          <div className="relative flex-1">
-            <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#9CA3AF]" />
-            <input
-              type="text"
-              placeholder="Поиск по имени или специализации..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-11 pr-4 py-3 bg-white border border-[#E5E7EB] rounded-[14px] text-sm text-[#111111] placeholder:text-[#9CA3AF] focus:outline-none focus:border-[#111111] transition-colors shadow-[0_2px_8px_rgba(0,0,0,0.03)]"
-            />
-          </div>
-          <div className="flex gap-2">
-            {(["all", "free", "busy"] as StatusFilter[]).map((s) => (
-              <button
-                key={s}
-                onClick={() => setStatusFilter(s)}
-                className={`px-3.5 py-2.5 rounded-[12px] text-sm font-medium transition-all duration-150 cursor-pointer border whitespace-nowrap ${
-                  statusFilter === s
-                    ? "bg-[#111111] text-white border-[#111111]"
-                    : "bg-white text-[#6B7280] border-[#E5E7EB] hover:border-[#D1D5DB]"
-                }`}
-              >
-                {s === "all" ? "Все" : s === "free" ? "🟢 Свободны" : "🟡 Заняты"}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Category filters */}
-        <div className="flex gap-2 flex-wrap mb-6">
-          {categories.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => setActiveCategory(cat)}
-              className={`px-3.5 py-2 rounded-[10px] text-sm font-medium transition-all duration-150 cursor-pointer border ${
-                activeCategory === cat
-                  ? "bg-[#111111] text-white border-[#111111]"
-                  : "bg-white text-[#6B7280] border-[#E5E7EB] hover:border-[#D1D5DB]"
-              }`}
-            >
-              {cat}
-            </button>
-          ))}
-        </div>
-
-        {/* Advanced filters (B2B) */}
-        <div className="bg-white border border-[#E5E7EB] rounded-[14px] p-4 mb-6 shadow-[0_2px_8px_rgba(0,0,0,0.03)]">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Filter size={15} className="text-[#6B7280]" />
-              <span className="text-sm font-medium text-[#6B7280]">Расширенные фильтры</span>
-              <Badge variant="pro" className="text-[10px]">B2B</Badge>
+        {role === "b2b" && (
+          <div
+            className="mt-3 flex items-center justify-between rounded-2xl p-4"
+            style={{ background: "linear-gradient(135deg, #0A84FF, #5E5CE6)" }}
+          >
+            <div>
+              <div className="text-sm font-bold text-white">Расширенный поиск</div>
+              <div className="text-xs text-white/80">Фильтр бўйича энг яхши мутахассислар</div>
             </div>
-            <div className="flex items-center gap-2">
-              <Lock size={13} className="text-[#9CA3AF]" />
-              <span className="text-xs text-[#9CA3AF]">Доступно по подписке</span>
-              <Button size="sm" variant="accent">Подключить B2B</Button>
-            </div>
+            <Button variant="primary" size="sm">
+              <SlidersHorizontal size={14} /> Фильтр
+            </Button>
           </div>
-          <div className="mt-3 flex flex-wrap gap-2 opacity-40 pointer-events-none select-none">
-            {[
-              "Наличие камеры Sony FX",
-              "Опыт в нише Авто",
-              "Свободны прямо сейчас",
-              "Проекты от 100K просмотров",
-              "Работа с брендами",
-            ].map((filter) => (
-              <span key={filter} className="px-3 py-1.5 bg-[#F3F4F6] text-[#6B7280] rounded-[8px] text-xs">
-                {filter}
-              </span>
-            ))}
-          </div>
-        </div>
-
-        {/* Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {filtered.map((creator) => (
-            <Link key={creator.id} href={`/profile/${creator.id}`}>
-              <Card hover className="p-5">
-                <div className="flex flex-col items-center text-center">
-                  <div className="relative mb-4">
-                    <div
-                      className="w-20 h-20 rounded-full flex items-center justify-center text-white text-2xl font-bold"
-                      style={{ backgroundColor: creator.avatarColor }}
-                    >
-                      {creator.avatar}
-                    </div>
-                    {creator.status === "free" ? (
-                      <div className="absolute -bottom-0.5 -right-0.5 w-5 h-5 bg-green-500 rounded-full border-2 border-white" />
-                    ) : (
-                      <div className="absolute -bottom-0.5 -right-0.5 w-5 h-5 bg-amber-400 rounded-full border-2 border-white" />
-                    )}
-                  </div>
-
-                  <div className="flex items-center gap-1.5 mb-1">
-                    <p
-                      className="font-bold text-[#111111]"
-                      style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
-                    >
-                      {creator.name}
-                    </p>
-                    {creator.isPro && (
-                      <span className="text-[10px] bg-[#111111] text-white px-1.5 py-0.5 rounded-[5px] font-bold">PRO</span>
-                    )}
-                  </div>
-
-                  <div className="flex items-center gap-1 text-xs text-[#6B7280] mb-3">
-                    <MapPin size={10} />
-                    {creator.city}
-                  </div>
-
-                  <div className="flex flex-wrap justify-center gap-1.5 mb-4">
-                    {creator.specializations.map((s) => (
-                      <Badge key={s} variant="accent" className="text-[11px]">{s}</Badge>
-                    ))}
-                  </div>
-
-                  <div className="w-full border-t border-[#F3F4F6] pt-3 flex items-center justify-between">
-                    <div className="flex items-center gap-1">
-                      <Star size={12} className="text-amber-400 fill-amber-400" />
-                      <span className="text-xs font-semibold text-[#111111]">{creator.rating}</span>
-                      <span className="text-xs text-[#6B7280]">({creator.reviewsCount})</span>
-                    </div>
-                    <div className="text-xs text-[#6B7280]">
-                      {creator.portfolioCount} работ
-                    </div>
-                  </div>
-
-                  <div className="w-full mt-3">
-                    {creator.status === "free" ? (
-                      <span className="text-xs text-green-600 font-medium">● Свободен для проектов</span>
-                    ) : (
-                      <span className="text-xs text-amber-600 font-medium">● Занят до {creator.busyUntil}</span>
-                    )}
-                  </div>
-                </div>
-              </Card>
-            </Link>
-          ))}
-
-          {filtered.length === 0 && (
-            <div className="col-span-full text-center py-16">
-              <p className="text-[#6B7280]">Специалистов не найдено. Попробуйте другие фильтры.</p>
-            </div>
-          )}
-        </div>
-
-        {/* PRO upgrade banner */}
-        <div className="mt-10 bg-[#111111] rounded-[20px] p-8 text-center relative overflow-hidden">
-          <div className="absolute inset-0 opacity-5">
-            <div className="absolute top-0 left-1/2 w-96 h-96 rounded-full bg-white -translate-x-1/2 -translate-y-32" />
-          </div>
-          <div className="relative">
-            <Badge variant="pro" className="mb-3 text-xs">PRO-подписка</Badge>
-            <h2
-              className="text-2xl font-bold text-white mb-2"
-              style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
-            >
-              Безлимитное портфолио и приоритетные отклики
-            </h2>
-            <p className="text-white/60 text-sm mb-5 max-w-md mx-auto">
-              Загружайте неограниченное количество работ, получайте приоритет в выдаче и значок верификации.
-            </p>
-            <div className="flex items-center justify-center gap-4">
-              <div className="text-center">
-                <p className="text-2xl font-bold text-white" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>990 ₽</p>
-                <p className="text-xs text-white/50">в месяц</p>
-              </div>
-              <Button size="lg" variant="secondary">Подключить PRO</Button>
-            </div>
-          </div>
-        </div>
+        )}
       </div>
-    </div>
+
+      {/* Categories */}
+      <div className="no-scrollbar mt-4 flex gap-2 overflow-x-auto px-4">
+        {categories.map((c) => (
+          <button
+            key={c}
+            onClick={() => setCat(c)}
+            className={cn(
+              "shrink-0 rounded-full px-4 py-1.5 text-[13px] font-semibold transition-colors",
+              cat === c ? "bg-white text-black" : "bg-[#1C1C1E] text-[rgba(235,235,245,0.6)] border border-white/[0.08]"
+            )}
+          >
+            {c}
+          </button>
+        ))}
+      </div>
+
+      {/* PRO row */}
+      <div className="mb-2 mt-6 px-4">
+        <h2 className="text-[17px] font-bold text-white">PRO Специалисты</h2>
+      </div>
+      <div className="no-scrollbar flex gap-3 overflow-x-auto px-4 pb-1">
+        {pros.map((c) => (
+          <Link key={c.id} href={`/profile/${c.id}`} className="flex w-[120px] shrink-0 flex-col items-center rounded-2xl border border-white/[0.08] bg-[#1C1C1E] p-3 text-center">
+            <div className="rounded-full bg-gradient-to-tr from-[#BF5AF2] to-[#0A84FF] p-[2px]">
+              <div
+                className="flex h-14 w-14 items-center justify-center rounded-full text-base font-bold text-white"
+                style={{ backgroundColor: c.avatarColor }}
+              >
+                {c.avatar}
+              </div>
+            </div>
+            <div className="mt-2 truncate w-full text-[13px] font-semibold text-white">{c.name.split(" ")[0]}</div>
+            <div className="truncate w-full text-[11px] text-[rgba(235,235,245,0.5)]">{c.specializations[0]}</div>
+            <div className="mt-1 flex items-center gap-1 text-[11px] text-[#FFD60A]">
+              <Star size={11} fill="#FFD60A" /> {c.rating}
+            </div>
+          </Link>
+        ))}
+      </div>
+
+      {/* Grid */}
+      <div className="mb-2 mt-6 px-4">
+        <h2 className="text-[17px] font-bold text-white">Барча мутахассислар</h2>
+      </div>
+      <div className="grid grid-cols-2 gap-3 px-4">
+        {filtered.map((c) => (
+          <div key={c.id} className="flex flex-col rounded-2xl border border-white/[0.08] bg-[#1C1C1E] p-4">
+            <div className="flex items-start justify-between">
+              <div
+                className="flex h-12 w-12 items-center justify-center rounded-full text-sm font-bold text-white"
+                style={{ backgroundColor: c.avatarColor }}
+              >
+                {c.avatar}
+              </div>
+              {c.isPro && <Badge variant="pro">PRO</Badge>}
+            </div>
+            <Link href={`/profile/${c.id}`} className="mt-2.5 truncate text-sm font-semibold text-white">
+              {c.name}
+            </Link>
+            <div className="truncate text-xs text-[rgba(235,235,245,0.5)]">{c.specializations.join(" • ")}</div>
+            <div className="mt-1.5 flex items-center gap-2 text-xs">
+              <span className="text-[rgba(235,235,245,0.5)]">{c.city}</span>
+              <span className="flex items-center gap-1 text-[#FFD60A]">
+                <Star size={11} fill="#FFD60A" /> {c.rating}
+              </span>
+            </div>
+            <div className="mt-1.5">
+              {c.status === "free" ? (
+                <Badge variant="success">● Бўш</Badge>
+              ) : (
+                <Badge variant="warning">● {c.busyUntil} гача</Badge>
+              )}
+            </div>
+            <Button variant={role === "b2b" ? "accent-b2b" : "accent-creator"} size="sm" className="mt-3 w-full">
+              <MessageCircle size={14} /> Ёзиш
+            </Button>
+          </div>
+        ))}
+      </div>
+      <div className="h-4" />
+    </AppShell>
   );
 }

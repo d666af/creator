@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { RoleProvider } from "@/lib/role-context";
 
 export const metadata: Metadata = {
-  title: "Creators Hub — Платформа для создателей контента",
-  description: "Профессиональная платформа для мобилографов, монтажёров, сценаристов и брендов. Портфолио, биржа вакансий, хакатоны.",
+  title: "Creators Hub — Kontent platformasi",
+  description: "Kontent yaratuvchilar va brendlar uchun platforma. Portfolio, vakansiyalar, hackatonlar.",
 };
 
 export default function RootLayout({
@@ -12,8 +13,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ru" className="h-full">
-      <body className="min-h-full flex flex-col">{children}</body>
+    <html lang="uz" className="h-full">
+      <body className="min-h-full bg-black text-white antialiased">
+        <RoleProvider>{children}</RoleProvider>
+      </body>
     </html>
   );
 }

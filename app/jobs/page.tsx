@@ -1,332 +1,153 @@
 "use client";
-import { useState } from "react";
-import { Navbar } from "@/components/layout/navbar";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Card } from "@/components/ui/card";
-import { mockJobs, mockCreators } from "@/lib/mock-data";
-import { Search, MapPin, Clock, Plus, X, Check, ChevronRight, Briefcase, Star } from "lucide-react";
 
-type FilterType = "all" | "Мобилография" | "Монтаж" | "Сценарий" | "SMM" | "Продюсер";
+import { useState } from "react";
+import { useRole } from "@/lib/role-context";
+import { AppShell } from "@/components/layout/app-shell";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { mockJobs } from "@/lib/mock-data";
+import { MapPin, Clock, Plus, X, Flame, Users } from "lucide-react";
+import { cn } from "@/lib/utils";
+
+const filters = ["Барчаси", "Reels", "Монтаж", "SMM", "Сценарий", "Продюсер"];
 
 export default function JobsPage() {
-  const [activeFilter, setActiveFilter] = useState<FilterType>("all");
-  const [selectedJob, setSelectedJob] = useState(mockJobs[0]);
-  const [showApplyModal, setShowApplyModal] = useState(false);
-  const [selectedWorks, setSelectedWorks] = useState<string[]>([]);
-  const [coverLetter, setCoverLetter] = useState("");
-  const [applied, setApplied] = useState(false);
+  const { role } = useRole();
+  const [filter, setFilter] = useState("Барчаси");
+  const [applyJob, setApplyJob] = useState<(typeof mockJobs)[number] | null>(null);
 
-  const filters: FilterType[] = ["all", "Мобилография", "Монтаж", "Сценарий", "SMM", "Продюсер"];
-  const filterLabels: Record<FilterType, string> = {
-    all: "Все направления",
-    Мобилография: "Мобилография",
-    Монтаж: "Монтаж",
-    Сценарий: "Сценарий",
-    SMM: "SMM",
-    Продюсер: "Продюсер",
-  };
-
-  const filteredJobs = activeFilter === "all"
-    ? mockJobs
-    : mockJobs.filter((j) => j.tags.some((t) => t.toLowerCase().includes(activeFilter.toLowerCase())));
-
-  const portfolioItems = mockCreators[0].portfolio;
-
-  const handleApply = () => {
-    setApplied(true);
-    setTimeout(() => {
-      setShowApplyModal(false);
-      setApplied(false);
-      setSelectedWorks([]);
-      setCoverLetter("");
-    }, 1500);
-  };
-
-  const toggleWork = (id: string) => {
-    setSelectedWorks((prev) =>
-      prev.includes(id) ? prev.filter((w) => w !== id) : prev.length < 3 ? [...prev, id] : prev
-    );
-  };
+  const filtered = mockJobs.filter(
+    (j) => filter === "Барчаси" || j.tags.some((t) => t.includes(filter))
+  );
 
   return (
-    <div className="min-h-screen bg-[#F9F9FB]">
-      <Navbar />
+    <AppShell>
+      <div className="px-4 pt-4">
+        {role === "b2b" && (
+          <button
+            className="mb-4 flex w-full items-center justify-center gap-2 rounded-2xl py-3.5 text-sm font-bold text-white"
+            style={{ background: "linear-gradient(135deg, #0A84FF, #5E5CE6)" }}
+          >
+            <Plus size={18} /> Вакансия эълон қилиш
+          </button>
+        )}
 
-      <div className="max-w-7xl mx-auto px-6 py-8">
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1
-              className="text-2xl font-bold text-[#111111]"
-              style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
-            >
-              Биржа вакансий
-            </h1>
-            <p className="text-sm text-[#6B7280] mt-0.5">{mockJobs.length} активных вакансий</p>
-          </div>
-          <Button size="sm">
-            <Plus size={15} />
-            Разместить вакансию
-          </Button>
-        </div>
-
-        {/* Search */}
-        <div className="relative mb-5">
-          <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#9CA3AF]" />
-          <input
-            type="text"
-            placeholder="Поиск по вакансиям..."
-            className="w-full pl-11 pr-4 py-3 bg-white border border-[#E5E7EB] rounded-[14px] text-sm text-[#111111] placeholder:text-[#9CA3AF] focus:outline-none focus:border-[#111111] transition-colors shadow-[0_2px_8px_rgba(0,0,0,0.03)]"
-          />
-        </div>
+        <h1 className="text-2xl font-extrabold text-white">
+          {role === "b2b" ? "Менинг вакансияларим" : "Вакансиялар"}
+        </h1>
 
         {/* Filters */}
-        <div className="flex gap-2 flex-wrap mb-6">
+        <div className="no-scrollbar mt-3 flex gap-2 overflow-x-auto">
           {filters.map((f) => (
             <button
               key={f}
-              onClick={() => setActiveFilter(f)}
-              className={`px-4 py-2 rounded-[10px] text-sm font-medium transition-all duration-150 cursor-pointer border ${
-                activeFilter === f
-                  ? "bg-[#111111] text-white border-[#111111]"
-                  : "bg-white text-[#6B7280] border-[#E5E7EB] hover:border-[#D1D5DB] hover:text-[#111111]"
-              }`}
+              onClick={() => setFilter(f)}
+              className={cn(
+                "shrink-0 rounded-full px-4 py-1.5 text-[13px] font-semibold transition-colors",
+                filter === f ? "bg-white text-black" : "bg-[#1C1C1E] text-[rgba(235,235,245,0.6)] border border-white/[0.08]"
+              )}
             >
-              {filterLabels[f]}
+              {f}
             </button>
           ))}
         </div>
-
-        <div className="flex flex-col lg:flex-row gap-5">
-          {/* Job list */}
-          <div className="lg:w-[420px] flex-shrink-0 space-y-3">
-            {filteredJobs.map((job) => (
-              <Card
-                key={job.id}
-                hover
-                onClick={() => setSelectedJob(job)}
-                className={`p-4 transition-all duration-200 ${
-                  selectedJob.id === job.id ? "border-[#111111] shadow-[0_4px_16px_rgba(0,0,0,0.08)]" : ""
-                }`}
-              >
-                <div className="flex gap-3">
-                  <div
-                    className="w-10 h-10 rounded-[11px] flex items-center justify-center text-white text-sm font-bold flex-shrink-0"
-                    style={{ backgroundColor: job.companyColor }}
-                  >
-                    {job.companyInitials}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start gap-2 mb-1">
-                      <h3 className="text-sm font-semibold text-[#111111] leading-snug flex-1">
-                        {job.title}
-                      </h3>
-                      {job.isHot && (
-                        <Badge variant="accent" className="flex-shrink-0 text-[10px]">Горячая</Badge>
-                      )}
-                    </div>
-                    <p className="text-xs text-[#6B7280] mb-2">{job.company} · {job.postedAt}</p>
-                    <div className="flex items-center justify-between">
-                      <div className="flex gap-1 flex-wrap">
-                        {job.tags.slice(0, 2).map((tag) => (
-                          <Badge key={tag} className="text-[10px]">#{tag}</Badge>
-                        ))}
-                      </div>
-                      <span className="text-sm font-bold text-[#111111] flex-shrink-0">{job.budget}</span>
-                    </div>
-                  </div>
-                </div>
-              </Card>
-            ))}
-          </div>
-
-          {/* Job detail */}
-          <div className="flex-1 min-w-0">
-            <Card className="p-7 sticky top-24">
-              <div className="flex items-start gap-4 mb-5">
-                <div
-                  className="w-12 h-12 rounded-[13px] flex items-center justify-center text-white font-bold"
-                  style={{ backgroundColor: selectedJob.companyColor }}
-                >
-                  {selectedJob.companyInitials}
-                </div>
-                <div className="flex-1">
-                  <div className="flex flex-wrap items-center gap-2 mb-1">
-                    <h2
-                      className="text-xl font-bold text-[#111111]"
-                      style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
-                    >
-                      {selectedJob.title}
-                    </h2>
-                    {selectedJob.isHot && <Badge variant="accent">Горячая</Badge>}
-                  </div>
-                  <p className="text-sm text-[#6B7280]">{selectedJob.company}</p>
-                </div>
-                <div className="text-right flex-shrink-0">
-                  <p
-                    className="text-xl font-bold text-[#111111]"
-                    style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
-                  >
-                    {selectedJob.budget}
-                  </p>
-                  <p className="text-xs text-[#6B7280]">{selectedJob.postedAt}</p>
-                </div>
-              </div>
-
-              <div className="flex flex-wrap gap-4 text-sm text-[#6B7280] mb-5 pb-5 border-b border-[#F3F4F6]">
-                <span className="flex items-center gap-1.5">
-                  <MapPin size={13} /> {selectedJob.location}
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <Clock size={13} /> {selectedJob.schedule}
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <Briefcase size={13} /> {selectedJob.experience}
-                </span>
-              </div>
-
-              <div className="mb-5">
-                <h3
-                  className="font-semibold text-[#111111] mb-2 text-sm"
-                  style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
-                >
-                  Описание
-                </h3>
-                <p className="text-sm text-[#6B7280] leading-relaxed">{selectedJob.description}</p>
-              </div>
-
-              <div className="mb-5">
-                <h3
-                  className="font-semibold text-[#111111] mb-2 text-sm"
-                  style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
-                >
-                  Требования
-                </h3>
-                <ul className="space-y-1.5">
-                  {selectedJob.requirements.map((req) => (
-                    <li key={req} className="flex items-start gap-2 text-sm text-[#6B7280]">
-                      <ChevronRight size={13} className="text-[#9CA3AF] mt-0.5 flex-shrink-0" />
-                      {req}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              <div className="flex flex-wrap gap-1.5 mb-6">
-                {selectedJob.tags.map((tag) => (
-                  <Badge key={tag} variant="accent">#{tag}</Badge>
-                ))}
-              </div>
-
-              <Button size="lg" className="w-full" onClick={() => setShowApplyModal(true)}>
-                Откликнуться на вакансию
-              </Button>
-            </Card>
-          </div>
-        </div>
       </div>
 
-      {/* Apply modal */}
-      {showApplyModal && (
-        <div
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-          onClick={() => !applied && setShowApplyModal(false)}
-        >
-          <div
-            className="bg-white rounded-[20px] max-w-lg w-full p-6 shadow-2xl animate-scale-in"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {applied ? (
-              <div className="text-center py-8">
-                <div className="w-16 h-16 bg-[#ECFDF5] rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Check size={28} className="text-[#059669]" />
-                </div>
-                <h3
-                  className="text-xl font-bold text-[#111111] mb-2"
-                  style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
-                >
-                  Отклик отправлен!
-                </h3>
-                <p className="text-[#6B7280] text-sm">Заказчик получит уведомление</p>
+      {/* Jobs */}
+      <div className="mt-4 flex flex-col gap-3 px-4">
+        {filtered.map((job) => (
+          <div key={job.id} className="rounded-2xl border border-white/[0.08] bg-[#1C1C1E] p-4">
+            <div className="flex items-start gap-3">
+              <div
+                className="flex h-11 w-11 items-center justify-center rounded-xl text-xs font-bold text-white"
+                style={{ backgroundColor: job.companyColor }}
+              >
+                {job.companyInitials}
               </div>
-            ) : (
-              <>
-                <div className="flex justify-between items-start mb-5">
-                  <h3
-                    className="text-lg font-bold text-[#111111]"
-                    style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
-                  >
-                    Откликнуться
-                  </h3>
-                  <button
-                    onClick={() => setShowApplyModal(false)}
-                    className="w-8 h-8 rounded-full bg-[#F3F4F6] flex items-center justify-center hover:bg-[#E5E7EB] transition-colors cursor-pointer"
-                  >
-                    <X size={14} />
-                  </button>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-semibold text-white">{job.company}</span>
+                  {job.isHot && (
+                    <Badge variant="error">
+                      <Flame size={10} /> Hot
+                    </Badge>
+                  )}
                 </div>
+                <span className="text-xs text-[rgba(235,235,245,0.5)]">{job.postedAt}</span>
+              </div>
+            </div>
 
-                <p className="text-sm text-[#6B7280] mb-5">
-                  Прикрепите 2–3 релевантные работы и напишите сопроводительное письмо
-                </p>
+            <h3 className="mt-3 text-[15px] font-semibold leading-snug text-white">{job.title}</h3>
+            <p className="mt-1 line-clamp-2 text-sm text-[rgba(235,235,245,0.6)]">{job.description}</p>
 
-                <div className="mb-5">
-                  <p className="text-sm font-semibold text-[#111111] mb-3">
-                    Выберите работы из портфолио ({selectedWorks.length}/3)
-                  </p>
-                  <div className="grid grid-cols-3 gap-2">
-                    {portfolioItems.map((work) => (
-                      <button
-                        key={work.id}
-                        onClick={() => toggleWork(work.id)}
-                        className={`relative aspect-video rounded-[10px] overflow-hidden cursor-pointer border-2 transition-all duration-150 ${
-                          selectedWorks.includes(work.id)
-                            ? "border-[#111111] shadow-[0_0_0_1px_#111111]"
-                            : "border-transparent"
-                        }`}
-                        style={{
-                          background: `linear-gradient(135deg, ${work.thumbnail}33, ${work.thumbnail}55)`,
-                        }}
-                      >
-                        {selectedWorks.includes(work.id) && (
-                          <div className="absolute top-1.5 right-1.5 w-5 h-5 bg-[#111111] rounded-full flex items-center justify-center">
-                            <Check size={10} className="text-white" />
-                          </div>
-                        )}
-                        <div className="absolute bottom-0 left-0 right-0 p-1.5 bg-gradient-to-t from-black/50 to-transparent">
-                          <p className="text-[9px] text-white font-medium truncate">{work.title}</p>
-                        </div>
-                      </button>
-                    ))}
+            <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-[rgba(235,235,245,0.5)]">
+              <span className="flex items-center gap-1">
+                <MapPin size={13} /> {job.location}
+              </span>
+              <span className="flex items-center gap-1">
+                <Clock size={13} /> {job.schedule}
+              </span>
+            </div>
+
+            <div className="mt-3 flex flex-wrap gap-1.5">
+              {job.tags.map((t) => (
+                <span key={t} className="rounded-full bg-white/[0.06] px-2.5 py-1 text-[11px] text-[rgba(235,235,245,0.55)]">
+                  {t}
+                </span>
+              ))}
+            </div>
+
+            <div className="mt-4 flex items-center justify-between border-t border-white/[0.06] pt-3">
+              <div>
+                <div className="text-base font-extrabold text-white">{job.budget}</div>
+                {role === "b2b" && (
+                  <div className="flex items-center gap-1 text-xs text-[#0A84FF]">
+                    <Users size={12} /> {job.applicationsCount} отклик
                   </div>
-                </div>
-
-                <div className="mb-5">
-                  <label className="text-sm font-semibold text-[#111111] block mb-2">
-                    Сопроводительное письмо
-                  </label>
-                  <textarea
-                    value={coverLetter}
-                    onChange={(e) => setCoverLetter(e.target.value)}
-                    placeholder="Расскажите, почему вы подходите для этого проекта..."
-                    rows={4}
-                    className="w-full px-4 py-3 rounded-[12px] border border-[#E5E7EB] text-sm text-[#111111] placeholder:text-[#9CA3AF] focus:outline-none focus:border-[#111111] transition-colors resize-none"
-                  />
-                </div>
-
-                <Button
-                  size="lg"
-                  className="w-full"
-                  disabled={selectedWorks.length === 0 || !coverLetter.trim()}
-                  onClick={handleApply}
-                >
-                  Отправить отклик
+                )}
+              </div>
+              {role === "creator" ? (
+                <Button variant="accent-creator" size="sm" onClick={() => setApplyJob(job)}>
+                  Откликнуться
                 </Button>
-              </>
-            )}
+              ) : (
+                <Button variant="outline" size="sm">
+                  Отклики
+                </Button>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+      <div className="h-4" />
+
+      {/* Apply bottom sheet */}
+      {applyJob && (
+        <div className="fixed inset-0 z-[60] flex items-end justify-center">
+          <div className="absolute inset-0 bg-black/60 animate-fade-in" onClick={() => setApplyJob(null)} />
+          <div className="relative w-full max-w-2xl rounded-t-[28px] border-t border-white/[0.08] bg-[#1C1C1E] p-5 pb-10 animate-sheet">
+            <div className="mx-auto mb-4 h-1.5 w-10 rounded-full bg-white/20" />
+            <button onClick={() => setApplyJob(null)} className="absolute right-4 top-4 text-[rgba(235,235,245,0.5)]">
+              <X size={22} />
+            </button>
+            <h3 className="text-lg font-bold text-white">Откликнуться</h3>
+            <p className="mt-0.5 text-sm text-[rgba(235,235,245,0.6)]">{applyJob.title}</p>
+
+            <textarea
+              rows={4}
+              placeholder="Сопроводительное письмо..."
+              className="mt-4 w-full resize-none rounded-2xl border border-white/[0.08] bg-[#2C2C2E] p-3.5 text-sm text-white outline-none placeholder:text-[rgba(235,235,245,0.4)]"
+            />
+            <div className="mt-2 flex items-center justify-between rounded-2xl border border-white/[0.08] bg-[#2C2C2E] px-4 py-3">
+              <span className="text-sm text-[rgba(235,235,245,0.6)]">Портфолио бириктириш</span>
+              <Plus size={18} className="text-[#BF5AF2]" />
+            </div>
+            <Button variant="accent-creator" size="lg" className="mt-4 w-full" onClick={() => setApplyJob(null)}>
+              Юбориш
+            </Button>
           </div>
         </div>
       )}
-    </div>
+    </AppShell>
   );
 }

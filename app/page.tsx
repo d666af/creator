@@ -1,375 +1,231 @@
+"use client";
+
 import Link from "next/link";
-import { Navbar } from "@/components/layout/navbar";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { useRole } from "@/lib/role-context";
+import { AppShell } from "@/components/layout/app-shell";
 import { Card } from "@/components/ui/card";
-import { mockJobs, mockCreators, mockPosts } from "@/lib/mock-data";
-import { ArrowRight, Zap, Search, Trophy, Star } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { mockCreators, mockPosts, mockJobs } from "@/lib/mock-data";
+import { Play, Heart, MessageCircle, Eye, Share2, Star, Plus, ChevronRight } from "lucide-react";
 
 export default function HomePage() {
-  const featuredJobs = mockJobs.slice(0, 3);
-  const featuredCreators = mockCreators.slice(0, 4);
-  const featuredPosts = mockPosts.slice(0, 3);
+  const { role } = useRole();
+  return <AppShell>{role === "creator" ? <CreatorHome /> : <B2BHome />}</AppShell>;
+}
 
+function CreatorHome() {
   return (
-    <div className="min-h-screen bg-[#F9F9FB]">
-      <Navbar />
-
-      {/* Hero */}
-      <section className="max-w-7xl mx-auto px-6 pt-20 pb-16">
-        <div className="max-w-3xl animate-fade-in">
-          <div className="inline-flex items-center gap-2 bg-white border border-[#E5E7EB] rounded-full px-4 py-2 mb-8 shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
-            <Zap size={14} className="text-[#4F46E5]" />
-            <span className="text-sm text-[#6B7280]">
-              <span className="font-semibold text-[#111111]">1 240+</span> креаторов уже на платформе
-            </span>
+    <div className="pt-2">
+      {/* Stories */}
+      <div className="no-scrollbar flex gap-4 overflow-x-auto px-4 py-3">
+        <div className="flex flex-col items-center gap-1.5 shrink-0">
+          <div className="flex h-16 w-16 items-center justify-center rounded-full border-2 border-dashed border-white/20">
+            <Plus size={22} className="text-white/60" />
           </div>
-
-          <h1
-            className="text-5xl font-bold text-[#111111] leading-[1.15] mb-6"
-            style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", letterSpacing: "-0.03em" }}
-          >
-            Платформа для
-            <br />
-            <span className="text-[#4F46E5]">создателей контента</span>
-            <br />
-            и брендов
-          </h1>
-
-          <p className="text-lg text-[#6B7280] mb-10 max-w-xl leading-relaxed">
-            Чистый инструмент для поиска команды, оценки работ и профессионального роста.
-            Биржа вакансий, галерея портфолио, хакатоны.
-          </p>
-
-          <div className="flex flex-wrap gap-3">
-            <Link href="/jobs">
-              <Button size="lg">
-                Найти заказы
-                <ArrowRight size={18} />
-              </Button>
-            </Link>
-            <Link href="/specialists">
-              <Button size="lg" variant="outline">
-                <Search size={18} />
-                Найти специалиста
-              </Button>
-            </Link>
-          </div>
+          <span className="text-[11px] text-[rgba(235,235,245,0.6)]">Siz</span>
         </div>
-
-        {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-20">
-          {[
-            { value: "1 240+", label: "Активных креаторов" },
-            { value: "380+", label: "Успешных проектов" },
-            { value: "94", label: "Активных вакансий" },
-            { value: "4.8", label: "Средний рейтинг" },
-          ].map((stat) => (
-            <Card key={stat.label} className="p-5 text-center">
-              <p
-                className="text-3xl font-bold text-[#111111] mb-1"
-                style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
-              >
-                {stat.value}
-              </p>
-              <p className="text-sm text-[#6B7280]">{stat.label}</p>
-            </Card>
-          ))}
-        </div>
-      </section>
-
-      {/* Jobs section */}
-      <section className="max-w-7xl mx-auto px-6 py-12">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h2
-              className="text-2xl font-bold text-[#111111]"
-              style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
-            >
-              Актуальные вакансии
-            </h2>
-            <p className="text-[#6B7280] text-sm mt-1">94 открытые позиции прямо сейчас</p>
-          </div>
-          <div className="flex items-center gap-3">
-            <select className="text-sm text-[#6B7280] bg-white border border-[#E5E7EB] rounded-[10px] px-3 py-2 focus:outline-none focus:border-[#111111]">
-              <option>Все направления</option>
-              <option>Мобилография</option>
-              <option>Монтаж</option>
-              <option>Сценарий</option>
-              <option>SMM</option>
-            </select>
-            <Link href="/jobs">
-              <Button variant="ghost" size="sm">
-                Все вакансии <ArrowRight size={14} />
-              </Button>
-            </Link>
-          </div>
-        </div>
-
-        <div className="space-y-3">
-          {featuredJobs.map((job) => (
-            <Link key={job.id} href={`/jobs`}>
-              <Card hover className="p-5">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex items-start gap-4 flex-1 min-w-0">
-                    <div
-                      className="w-11 h-11 rounded-[12px] flex items-center justify-center text-white text-sm font-bold flex-shrink-0"
-                      style={{ backgroundColor: job.companyColor }}
-                    >
-                      {job.companyInitials}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2 flex-wrap mb-1">
-                        <h3 className="text-[15px] font-semibold text-[#111111] leading-tight">
-                          {job.title}
-                        </h3>
-                        {job.isHot && <Badge variant="accent">Горячая</Badge>}
-                      </div>
-                      <p className="text-sm text-[#6B7280] mb-3">
-                        {job.location} · {job.schedule} · {job.experience}
-                      </p>
-                      <div className="flex flex-wrap gap-1.5">
-                        {job.tags.map((tag) => (
-                          <Badge key={tag}>#{tag}</Badge>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex flex-col items-end gap-3 flex-shrink-0">
-                    <span
-                      className="text-base font-bold text-[#111111] whitespace-nowrap"
-                      style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
-                    >
-                      {job.budget}
-                    </span>
-                    <Button size="sm">Откликнуться</Button>
-                  </div>
+        {mockCreators.map((c) => (
+          <Link key={c.id} href={`/profile/${c.id}`} className="flex flex-col items-center gap-1.5 shrink-0">
+            <div className="rounded-full bg-gradient-to-tr from-[#BF5AF2] to-[#FF2D55] p-[2.5px]">
+              <div className="rounded-full border-2 border-black p-[2px]">
+                <div
+                  className="flex h-14 w-14 items-center justify-center rounded-full text-sm font-bold text-white"
+                  style={{ backgroundColor: c.avatarColor }}
+                >
+                  {c.avatar}
                 </div>
-              </Card>
-            </Link>
-          ))}
-        </div>
-      </section>
-
-      {/* Community section */}
-      <section className="max-w-7xl mx-auto px-6 py-12">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h2
-              className="text-2xl font-bold text-[#111111]"
-              style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
-            >
-              Новые работы в сообществе
-            </h2>
-            <p className="text-[#6B7280] text-sm mt-1">Свежие кейсы и работы от профессионалов</p>
-          </div>
-          <Link href="/feed">
-            <Button variant="ghost" size="sm">
-              Вся лента <ArrowRight size={14} />
-            </Button>
-          </Link>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {featuredPosts.map((post) => (
-            <Link key={post.id} href="/feed">
-              <Card hover className="overflow-hidden">
-                {post.videoColor && (
-                  <div
-                    className={`relative overflow-hidden ${
-                      post.videoAspect === "9:16" ? "aspect-[9/16] max-h-80" : "aspect-video"
-                    }`}
-                    style={{
-                      background: `linear-gradient(135deg, ${post.videoColor}22, ${post.videoColor}44)`,
-                    }}
-                  >
-                    <div
-                      className="absolute inset-0 flex items-center justify-center"
-                      style={{ background: `${post.videoColor}15` }}
-                    >
-                      <div
-                        className="w-12 h-12 rounded-full flex items-center justify-center"
-                        style={{ backgroundColor: post.videoColor }}
-                      >
-                        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-                          <path d="M6 4l9 5-9 5V4z" fill="white" />
-                        </svg>
-                      </div>
-                    </div>
-                    <div className="absolute bottom-3 left-3 right-3">
-                      <div className="flex gap-1.5 flex-wrap">
-                        {post.tags.map((tag) => (
-                          <span
-                            key={tag}
-                            className="text-xs px-2 py-0.5 rounded-full text-white font-medium"
-                            style={{ backgroundColor: "rgba(0,0,0,0.4)", backdropFilter: "blur(4px)" }}
-                          >
-                            {tag}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                )}
-                <div className="p-4">
-                  <p className="text-sm font-semibold text-[#111111] mb-2 line-clamp-2">{post.title}</p>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <div
-                        className="w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-bold"
-                        style={{ backgroundColor: post.author.color }}
-                      >
-                        {post.author.avatar.charAt(0)}
-                      </div>
-                      <span className="text-xs text-[#6B7280]">{post.author.name}</span>
-                      {post.author.isPro && (
-                        <span className="text-xs bg-[#111111] text-white px-1.5 py-0.5 rounded-[5px] font-medium">PRO</span>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-1">
-                      {post.author.specialization === "Мобилограф" || post.author.specialization === "Продюсер" ? (
-                        <span className="text-[10px] text-green-500 font-medium">● Свободен</span>
-                      ) : (
-                        <span className="text-[10px] text-amber-500 font-medium">● Занят</span>
-                      )}
-                    </div>
-                  </div>
-                  {"reviewScores" in post && post.reviewScores && (
-                    <div className="mt-3 pt-3 border-t border-[#F3F4F6] grid grid-cols-3 gap-2">
-                      {Object.entries(post.reviewScores).map(([key, val]) => (
-                        <div key={key} className="text-center">
-                          <p className="text-xs font-semibold text-[#111111]">{val}</p>
-                          <p className="text-[10px] text-[#6B7280] capitalize">{key === "montage" ? "Монтаж" : key === "scenario" ? "Сценарий" : "Цвет"}</p>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </Card>
-            </Link>
-          ))}
-        </div>
-      </section>
-
-      {/* Specialists preview */}
-      <section className="max-w-7xl mx-auto px-6 py-12">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h2
-              className="text-2xl font-bold text-[#111111]"
-              style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
-            >
-              Специалисты платформы
-            </h2>
-            <p className="text-[#6B7280] text-sm mt-1">Проверенные профессионалы, готовые к работе</p>
-          </div>
-          <Link href="/specialists">
-            <Button variant="ghost" size="sm">
-              Все специалисты <ArrowRight size={14} />
-            </Button>
-          </Link>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {featuredCreators.map((creator) => (
-            <Link key={creator.id} href={`/profile/${creator.id}`}>
-              <Card hover className="p-5">
-                <div className="flex flex-col items-center text-center">
-                  <div className="relative mb-3">
-                    <div
-                      className="w-16 h-16 rounded-full flex items-center justify-center text-white text-xl font-bold"
-                      style={{ backgroundColor: creator.avatarColor }}
-                    >
-                      {creator.avatar}
-                    </div>
-                    {creator.status === "free" ? (
-                      <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-green-500 rounded-full border-2 border-white" />
-                    ) : (
-                      <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-amber-400 rounded-full border-2 border-white" />
-                    )}
-                  </div>
-                  <div className="flex items-center gap-1.5 mb-1">
-                    <p className="font-semibold text-[#111111] text-sm">{creator.name}</p>
-                    {creator.isPro && (
-                      <span className="text-[10px] bg-[#111111] text-white px-1.5 py-0.5 rounded-[5px] font-medium">PRO</span>
-                    )}
-                  </div>
-                  <p className="text-xs text-[#6B7280] mb-3">{creator.city}</p>
-                  <div className="flex flex-wrap justify-center gap-1 mb-3">
-                    {creator.specializations.map((s) => (
-                      <Badge key={s} variant="accent" className="text-[10px] px-2 py-0.5">
-                        {s}
-                      </Badge>
-                    ))}
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Star size={12} className="text-amber-400 fill-amber-400" />
-                    <span className="text-xs font-semibold text-[#111111]">{creator.rating}</span>
-                    <span className="text-xs text-[#6B7280]">({creator.reviewsCount})</span>
-                  </div>
-                </div>
-              </Card>
-            </Link>
-          ))}
-        </div>
-      </section>
-
-      {/* Hackathons promo */}
-      <section className="max-w-7xl mx-auto px-6 py-12">
-        <Card className="p-8 md:p-12 bg-[#111111] border-0 overflow-hidden relative">
-          <div className="absolute inset-0 opacity-5">
-            <div className="absolute top-0 right-0 w-96 h-96 rounded-full bg-white translate-x-32 -translate-y-32" />
-          </div>
-          <div className="relative flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-            <div>
-              <div className="flex items-center gap-2 mb-3">
-                <Trophy size={20} className="text-amber-400" />
-                <span className="text-amber-400 text-sm font-semibold">3 активных хакатона</span>
               </div>
-              <h2
-                className="text-3xl font-bold text-white mb-3"
-                style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
-              >
-                Участвуй в хакатонах
-              </h2>
-              <p className="text-white/60 max-w-md text-sm leading-relaxed">
-                Выигрывай призы до 50 000 ₽ и долгосрочные контракты с брендами.
-                Голосование комьюнити + экспертное жюри.
-              </p>
             </div>
-            <Link href="/hackathons">
-              <Button size="lg" variant="secondary" className="whitespace-nowrap">
-                Смотреть хакатоны
-                <ArrowRight size={18} />
-              </Button>
-            </Link>
-          </div>
-        </Card>
-      </section>
-
-      {/* Footer */}
-      <footer className="border-t border-[#E5E7EB] mt-8">
-        <div className="max-w-7xl mx-auto px-6 py-10 flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2.5">
-            <div className="w-7 h-7 bg-[#111111] rounded-[8px] flex items-center justify-center">
-              <span className="text-white text-xs font-bold">CH</span>
-            </div>
-            <span
-              className="text-sm font-semibold text-[#111111]"
-              style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
-            >
-              Creators Hub
+            <span className="max-w-16 truncate text-[11px] text-[rgba(235,235,245,0.6)]">
+              {c.name.split(" ")[0]}
             </span>
-          </div>
-          <p className="text-sm text-[#6B7280]">© 2026 Creators Hub. Все права защищены.</p>
-          <div className="flex gap-6">
-            {["Условия", "Конфиденциальность", "Поддержка"].map((item) => (
-              <a key={item} href="#" className="text-sm text-[#6B7280] hover:text-[#111111] transition-colors">
-                {item}
-              </a>
-            ))}
-          </div>
+          </Link>
+        ))}
+      </div>
+
+      {/* Feed */}
+      <div className="flex flex-col gap-3 px-3 pt-1">
+        {mockPosts.map((post) => (
+          <FeedPost key={post.id} post={post} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function FeedPost({ post }: { post: (typeof mockPosts)[number] }) {
+  const typeLabel: Record<string, string> = { case: "Кейс", question: "Савол", review: "Ревью" };
+  return (
+    <Card className="overflow-hidden">
+      <div className="flex items-center gap-3 p-3">
+        <div
+          className="flex h-10 w-10 items-center justify-center rounded-full text-xs font-bold text-white"
+          style={{ backgroundColor: post.author.color }}
+        >
+          {post.author.avatar}
         </div>
-      </footer>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-1.5">
+            <span className="truncate text-sm font-semibold text-white">{post.author.name}</span>
+            {post.author.isPro && <Badge variant="pro">PRO</Badge>}
+          </div>
+          <span className="text-xs text-[rgba(235,235,245,0.5)]">
+            {post.author.specialization} • {post.postedAt}
+          </span>
+        </div>
+        <Badge variant="creator">{typeLabel[post.type]}</Badge>
+      </div>
+
+      {post.videoColor && (
+        <div
+          className={`relative flex items-center justify-center ${
+            post.videoAspect === "9:16" ? "aspect-[9/16] max-h-96" : "aspect-video"
+          }`}
+          style={{ background: `linear-gradient(135deg, ${post.videoColor}, ${post.videoColor}55)` }}
+        >
+          <div className="flex h-14 w-14 items-center justify-center rounded-full bg-black/40 glass">
+            <Play size={24} className="ml-1 text-white" fill="white" />
+          </div>
+          <span className="absolute bottom-3 right-3 rounded-md bg-black/50 px-1.5 py-0.5 text-[11px] font-medium text-white">
+            {post.views}
+          </span>
+        </div>
+      )}
+
+      <div className="p-3.5">
+        <h3 className="text-[15px] font-semibold leading-snug text-white">{post.title}</h3>
+        <p className="mt-1 line-clamp-2 text-sm text-[rgba(235,235,245,0.6)]">{post.content}</p>
+
+        <div className="mt-3 flex items-center gap-5 text-[rgba(235,235,245,0.6)]">
+          <button className="flex items-center gap-1.5 text-sm">
+            <Heart size={18} /> {post.likes}
+          </button>
+          <button className="flex items-center gap-1.5 text-sm">
+            <MessageCircle size={18} /> {post.comments}
+          </button>
+          <span className="flex items-center gap-1.5 text-sm">
+            <Eye size={18} /> {post.views}
+          </span>
+          <button className="ml-auto">
+            <Share2 size={18} />
+          </button>
+        </div>
+      </div>
+    </Card>
+  );
+}
+
+function B2BHome() {
+  const topCreators = mockCreators.filter((c) => c.isPro).slice(0, 6);
+  return (
+    <div className="px-4 pt-4">
+      <h1 className="text-2xl font-extrabold text-white">Xush kelibsiz 👋</h1>
+      <p className="mt-1 text-sm text-[rgba(235,235,245,0.6)]">
+        Bugun jamoangizga kim kerak?
+      </p>
+
+      {/* Stats */}
+      <div className="mt-4 grid grid-cols-3 gap-2.5">
+        {[
+          { n: "5", l: "вакансия" },
+          { n: "23", l: "отклик" },
+          { n: "2", l: "янги" },
+        ].map((s) => (
+          <div key={s.l} className="rounded-2xl border border-white/[0.08] bg-[#1C1C1E] p-3.5 text-center">
+            <div className="text-xl font-extrabold text-white">{s.n}</div>
+            <div className="text-[11px] text-[rgba(235,235,245,0.5)]">{s.l}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Recommended */}
+      <SectionHeader title="Тавсия этилган мутахассислар" href="/specialists" />
+      <div className="no-scrollbar -mx-4 flex gap-3 overflow-x-auto px-4 pb-1">
+        {topCreators.map((c) => (
+          <Link
+            key={c.id}
+            href={`/profile/${c.id}`}
+            className="w-40 shrink-0 rounded-2xl border border-white/[0.08] bg-[#1C1C1E] p-4"
+          >
+            <div
+              className="flex h-12 w-12 items-center justify-center rounded-full text-sm font-bold text-white"
+              style={{ backgroundColor: c.avatarColor }}
+            >
+              {c.avatar}
+            </div>
+            <div className="mt-2.5 truncate text-sm font-semibold text-white">{c.name}</div>
+            <div className="truncate text-xs text-[rgba(235,235,245,0.5)]">
+              {c.specializations[0]} • {c.city}
+            </div>
+            <div className="mt-2 flex items-center gap-1 text-xs text-[#FFD60A]">
+              <Star size={12} fill="#FFD60A" /> {c.rating}
+            </div>
+          </Link>
+        ))}
+      </div>
+
+      {/* Active jobs */}
+      <SectionHeader title="Активные вакансии" href="/jobs" />
+      <div className="flex flex-col gap-2.5">
+        {mockJobs.slice(0, 3).map((j) => (
+          <Link
+            key={j.id}
+            href="/jobs"
+            className="flex items-center gap-3 rounded-2xl border border-white/[0.08] bg-[#1C1C1E] p-3.5"
+          >
+            <div
+              className="flex h-11 w-11 items-center justify-center rounded-xl text-xs font-bold text-white"
+              style={{ backgroundColor: j.companyColor }}
+            >
+              {j.companyInitials}
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="truncate text-sm font-semibold text-white">{j.title}</div>
+              <div className="text-xs text-[rgba(235,235,245,0.5)]">{j.budget}</div>
+            </div>
+            <Badge variant="b2b">{j.applicationsCount} отклик</Badge>
+          </Link>
+        ))}
+      </div>
+
+      {/* Top creators */}
+      <SectionHeader title="Топ креаторлар" href="/specialists" />
+      <div className="flex flex-col gap-2.5">
+        {mockCreators.slice(0, 4).map((c) => (
+          <Link
+            key={c.id}
+            href={`/profile/${c.id}`}
+            className="flex items-center gap-3 rounded-2xl border border-white/[0.08] bg-[#1C1C1E] p-3"
+          >
+            <div
+              className="flex h-10 w-10 items-center justify-center rounded-full text-xs font-bold text-white"
+              style={{ backgroundColor: c.avatarColor }}
+            >
+              {c.avatar}
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="truncate text-sm font-semibold text-white">{c.name}</div>
+              <div className="truncate text-xs text-[rgba(235,235,245,0.5)]">
+                {c.specializations.join(" • ")}
+              </div>
+            </div>
+            <div className="flex items-center gap-1 text-xs text-[#FFD60A]">
+              <Star size={12} fill="#FFD60A" /> {c.rating}
+            </div>
+          </Link>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function SectionHeader({ title, href }: { title: string; href: string }) {
+  return (
+    <div className="mb-3 mt-7 flex items-center justify-between">
+      <h2 className="text-[17px] font-bold text-white">{title}</h2>
+      <Link href={href} className="flex items-center text-xs font-medium text-[#0A84FF]">
+        Барчаси <ChevronRight size={14} />
+      </Link>
     </div>
   );
 }
