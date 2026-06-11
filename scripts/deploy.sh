@@ -12,8 +12,8 @@ cd "$APP_DIR"
 git fetch origin "$BRANCH" >> "$LOG" 2>&1
 git reset --hard "origin/$BRANCH" >> "$LOG" 2>&1
 
-npm install >> "$LOG" 2>&1
-npm run build >> "$LOG" 2>&1
+NODE_ENV=development npm install >> "$LOG" 2>&1
+NODE_ENV=production npm run build >> "$LOG" 2>&1
 
 pm2 restart creators-hub >> "$LOG" 2>&1
 
