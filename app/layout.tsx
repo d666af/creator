@@ -14,7 +14,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="uz" className="h-full">
-      <body className="min-h-full bg-black text-white antialiased">
+      <body className="min-h-full antialiased" style={{ backgroundColor: "#F5F4F0", color: "#1C1A17" }}>
         <RoleProvider>{children}</RoleProvider>
       </body>
     </html>
