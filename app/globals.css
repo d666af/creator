@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
 @import "tailwindcss";
 
 *, *::before, *::after {
@@ -8,26 +8,17 @@
 
 body {
   -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  font-family: -apple-system, "SF Pro Text", "Inter", BlinkMacSystemFont, sans-serif;
-  background-color: #F2F2F7;
-  color: #000000;
+  font-family: "Inter", -apple-system, sans-serif;
+  background: #F7F6F2;
+  color: #1A1A18;
   overscroll-behavior-y: none;
 }
 
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 .no-scrollbar::-webkit-scrollbar { display: none; }
 
-.pb-nav { padding-bottom: calc(62px + env(safe-area-inset-bottom)); }
-
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(6px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
-@keyframes slideUp {
-  from { opacity: 0; transform: translateY(20px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-.animate-fade-in  { animation: fadeIn  0.22s ease-out both; }
-.animate-slide-up { animation: slideUp 0.3s cubic-bezier(0.16,1,0.3,1) both; }
+.animate-in { animation: fadeIn 0.2s ease both; }
