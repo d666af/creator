@@ -37,6 +37,10 @@ export type Section = {
 export const ytThumb = (id: string) =>
   `https://img.youtube.com/vi/${id}/hqdefault.jpg`;
 
+// Portrait (9:16) thumbnail — oardefault.jpg is YouTube's OAR thumbnail for Shorts
+export const ytPortraitThumb = (id: string) =>
+  `https://i.ytimg.com/vi/${id}/oardefault.jpg`;
+
 export const ytMaxThumb = (id: string) =>
   `https://img.youtube.com/vi/${id}/maxresdefault.jpg`;
 
@@ -51,71 +55,72 @@ export const ytPlayer = (id: string) =>
 export const SECTIONS: Section[] = [
   {
     id: 'reels', num: '01', genre: 'Reels & Shorts', layout: 'portrait',
+    // YouTube Shorts IDs — vertical 9:16 content. Replace with your own Shorts IDs.
     cases: [
       {
         id: 'r1', title: 'Fashion Reels для ModaUz',
         creator: 'Nilufar Rashidova', initials: 'NR', avatarColor: '#5C4A3A',
         spec: 'Мобилограф', views: '142K', viewsNum: 142,
-        youtubeId: 'JGwWNGJdvx8', isPro: true, duration: '0:28',
+        youtubeId: 'wCi-8FABaO0', isPro: true, duration: '0:28',
         task: 'Вирусные Reels для кийим бренди', result: '+800 подписчиков за 2 дня',
         city: 'Самарканд', rating: 4.8,
         story: 'Снимала Fashion Reels для Moda.uz на iPhone 15 Pro. Акцент на динамике движения, текстурах ткани и естественном свете Самарканда. Контент вышел за рамки задачи — бренд получил +800 подписчиков за 2 дня без платного продвижения.',
         roles: ['Съёмка', 'Монтаж', 'Постобработка'],
         category: 'Fashion',
         tags: ['#reels', '#fashion', '#mobilecinema', '#самарканд'],
-        galleryIds: ['9bZkp7q19f0', 'OPf0YbXqDm0', 'fRh_vgS2dFE'],
+        galleryIds: ['3AiWwNiMDSU', 'ZiETCMbR8mU', '_9I5VXKWY3I'],
       },
       {
         id: 'r2', title: 'Вирал Shorts +2K продаж',
         creator: 'Azizbek Karimov', initials: 'AK', avatarColor: '#3A4A5C',
         spec: 'Сценарист', views: '540K', viewsNum: 540,
-        youtubeId: '9bZkp7q19f0', isPro: false, duration: '0:35',
+        youtubeId: '3AiWwNiMDSU', isPro: false, duration: '0:35',
         task: 'Вирал контент beauty бренда', result: '+2000 продаж в первую неделю',
         city: 'Ташкент', rating: 5.0,
         story: 'Написал вирусный сценарий для beauty-бренда по схеме «проблема → триггер → решение» в 30 секунд. Ролик разлетелся органически — 540K просмотров без рекламного бюджета и +2000 продаж за первую неделю.',
         roles: ['Сценарий', 'Раскадровка', 'Режиссура'],
         category: 'Beauty',
         tags: ['#shorts', '#beauty', '#viral', '#ташкент'],
-        galleryIds: ['JGwWNGJdvx8', 'kJQP7kiw5Fk', 'OPf0YbXqDm0'],
+        galleryIds: ['wCi-8FABaO0', 'ZiETCMbR8mU', '_9I5VXKWY3I'],
       },
       {
         id: 'r3', title: 'Food Reels ресторан',
         creator: 'Feruza Nazarova', initials: 'FN', avatarColor: '#3A5C48',
         spec: 'Мобилограф', views: '230K', viewsNum: 230,
-        youtubeId: 'OPf0YbXqDm0', isPro: true, duration: '0:22',
+        youtubeId: 'ZiETCMbR8mU', isPro: true, duration: '0:22',
         task: 'Таом съёмкаси', result: '+1200 подписчиков',
         city: 'Ташкент', rating: 4.9,
         story: 'Снимала атмосферные food reels для ресторана в Ташкенте. Минимум реквизита, максимум текстуры — естественный свет у окна, медленные движения камеры. Контент набрал 230K без таргета.',
         roles: ['Съёмка', 'Монтаж', 'Стайлинг'],
         category: 'Food',
         tags: ['#food', '#reels', '#ресторан', '#ташкент'],
-        galleryIds: ['JGwWNGJdvx8', 'fRh_vgS2dFE', '9bZkp7q19f0'],
+        galleryIds: ['wCi-8FABaO0', '3AiWwNiMDSU', '_9I5VXKWY3I'],
       },
       {
         id: 'r4', title: 'Beauty контент — серия',
         creator: 'Nilufar Rashidova', initials: 'NR', avatarColor: '#5C4A3A',
         spec: 'Мобилограф', views: '89K', viewsNum: 89,
-        youtubeId: 'fRh_vgS2dFE', isPro: true, duration: '0:31',
+        youtubeId: '_9I5VXKWY3I', isPro: true, duration: '0:31',
         task: '5 роликов beauty серии', result: '3 ролика попали в топ',
         city: 'Самарканд', rating: 4.8,
         story: 'Серия из 5 beauty-роликов для косметического бренда с единой визуальной концепцией: тёплая гамма, крупные планы текстур, ASMR-звук. 3 из 5 роликов попали в рекомендации органически.',
         roles: ['Съёмка', 'Монтаж', 'Цветокоррекция'],
         category: 'Beauty',
         tags: ['#beauty', '#reels', '#skincare', '#самарканд'],
-        galleryIds: ['OPf0YbXqDm0', '9bZkp7q19f0', 'kJQP7kiw5Fk'],
+        galleryIds: ['ZiETCMbR8mU', '3AiWwNiMDSU', 'wCi-8FABaO0'],
       },
       {
         id: 'r5', title: 'Кафе атмосфера — промо',
         creator: 'Feruza Nazarova', initials: 'FN', avatarColor: '#3A5C48',
         spec: 'Мобилограф', views: '88K', viewsNum: 88,
-        youtubeId: 'kJQP7kiw5Fk', isPro: true, duration: '0:19',
+        youtubeId: 'fNFzfwLM72c', isPro: true, duration: '0:19',
         task: 'Кафе промо', result: '88K просмотров',
         city: 'Ташкент', rating: 4.9,
         story: '19 секунд — кофе, люди, свет. Атмосферное промо для нового кафе в Ташкенте, снятое в час пик для передачи живого настроения места. Без сценария, только наблюдение.',
         roles: ['Съёмка', 'Монтаж'],
         category: 'Lifestyle',
         tags: ['#cafe', '#vibe', '#reels', '#ташкент'],
-        galleryIds: ['fRh_vgS2dFE', 'JGwWNGJdvx8', 'OPf0YbXqDm0'],
+        galleryIds: ['wCi-8FABaO0', '_9I5VXKWY3I', 'ZiETCMbR8mU'],
       },
     ],
   },

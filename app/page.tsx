@@ -6,12 +6,17 @@ import { Play, Eye, Search, Bell, Home, Users, Briefcase, User } from 'lucide-re
 import {
   type CaseItem, type Section,
   SECTIONS, HERO_ITEMS, TICKER_ITEMS,
-  ytThumb, ytMaxThumb,
+  ytThumb, ytPortraitThumb, ytMaxThumb,
 } from '@/lib/data';
 
 // ─── YouTube URLs ─────────────────────────────────────────────────────────────
 
 const ytPreview = (id: string) =>
+  `https://www.youtube.com/embed/${id}?enablejsapi=1&autoplay=1&mute=1&controls=0&loop=1&playlist=${id}&playsinline=1&rel=0&modestbranding=1&disablekb=1&iv_load_policy=3`;
+
+// For Shorts: clip the 16:9 player to show only the center 9:16 strip (no black bars)
+// The iframe is made 177.78% wide (= 16/9) in the 9:16 card, then centred — shows exact portrait crop
+const ytShortsPreview = (id: string) =>
   `https://www.youtube.com/embed/${id}?enablejsapi=1&autoplay=1&mute=1&controls=0&loop=1&playlist=${id}&playsinline=1&rel=0&modestbranding=1&disablekb=1&iv_load_policy=3`;
 
 // ─── Hooks ────────────────────────────────────────────────────────────────────
@@ -222,16 +227,17 @@ function PortraitCard({ item, onClick }: { item: CaseItem; onClick: (c: CaseItem
         willChange: 'transform',
       }}
     >
-      {/* Static thumbnail — fades out when preview is visible */}
+      {/* Portrait thumbnail (oardefault = 9:16 for Shorts) */}
       <div style={{
         position: 'absolute', inset: 0,
-        backgroundImage: `url(${ytThumb(item.youtubeId)})`,
+        backgroundImage: `url(${ytPortraitThumb(item.youtubeId)})`,
         backgroundSize: 'cover', backgroundPosition: 'center',
         transition: 'opacity 0.4s ease',
         opacity: preview ? 0 : 1,
       }} />
 
-      {/* Pre-rendered iframe (loads when card enters viewport, shown on hover) */}
+      {/* Pre-rendered iframe — Shorts: content is the center 56.25% strip of the 16:9 frame.
+          We set iframe width = 177.78% (= 100% / 0.5625) so that center 9:16 strip fills card exactly. */}
       {inView && (
         <div style={{
           position: 'absolute', inset: 0, overflow: 'hidden',
@@ -240,12 +246,12 @@ function PortraitCard({ item, onClick }: { item: CaseItem; onClick: (c: CaseItem
         }}>
           <iframe
             ref={iframeRef}
-            src={ytPreview(item.youtubeId)}
+            src={ytShortsPreview(item.youtubeId)}
             allow="autoplay; encrypted-media"
             onLoad={onIframeLoad}
             style={{
               position: 'absolute', top: 0, left: '50%',
-              width: '320%', height: '100%',
+              width: '177.78%', height: '100%',
               transform: 'translateX(-50%)',
               border: 'none', pointerEvents: 'none',
             }}
