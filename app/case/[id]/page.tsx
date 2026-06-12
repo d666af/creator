@@ -3,7 +3,7 @@
 import { use, useState, useEffect, useRef, useCallback, type ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Share2, Play, Pause, Volume2, VolumeX, Maximize, Eye, Star, Send } from 'lucide-react';
-import { type CaseItem, ALL_CASES, findCase, findCaseSection, ytMaxThumb, ytThumb, ytPortraitThumb } from '@/lib/data';
+import { type CaseItem, ALL_CASES, findCase, findCaseSection, ytMaxThumb, ytThumb } from '@/lib/data';
 
 // ─── YouTube IFrame API types ─────────────────────────────────────────────────
 
@@ -190,7 +190,6 @@ function CustomPlayer({ videoId, thumbnailUrl, isPortrait }: { videoId: string; 
           <img
             src={thumbnailUrl}
             alt=""
-            onError={(e) => { (e.currentTarget as HTMLImageElement).src = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`; }}
             style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
           />
           <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.3)' }} />
@@ -418,7 +417,7 @@ export default function CasePage({ params }: { params: Promise<{ id: string }> }
       {/* ── Custom player ── */}
       <CustomPlayer
         videoId={item.youtubeId}
-        thumbnailUrl={isPortrait ? ytPortraitThumb(item.youtubeId) : ytMaxThumb(item.youtubeId)}
+        thumbnailUrl={ytMaxThumb(item.youtubeId)}
         isPortrait={isPortrait}
       />
 

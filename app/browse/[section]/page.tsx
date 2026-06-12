@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { ArrowLeft, Eye, X } from 'lucide-react';
 import {
   SECTIONS, getBrowseItems,
-  ytThumb, ytPortraitThumb,
+  ytThumb,
   type BrowseItem,
 } from '@/lib/data';
 
@@ -111,7 +111,7 @@ function BrowseCard({
   item: BrowseItem; isPortrait: boolean; onClick: () => void;
 }) {
   const [hovered, setHovered] = useState(false);
-  const thumb = isPortrait ? ytPortraitThumb(item.thumbId) : ytThumb(item.thumbId);
+  const thumb = ytThumb(item.thumbId);
 
   return (
     <div
@@ -136,7 +136,6 @@ function BrowseCard({
         <img
           src={thumb}
           alt={item.title}
-          onError={(e) => { (e.currentTarget as HTMLImageElement).src = `https://img.youtube.com/vi/${item.thumbId}/hqdefault.jpg`; }}
           style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
         />
         {/* Bottom gradient + views */}
