@@ -221,32 +221,15 @@ export default function CreatorsPage() {
   return (
     <div style={{ background: '#F5F5F3', minHeight: '100vh', paddingBottom: 100, paddingTop: headerH }}>
 
-      {/* ── Fixed header ── */}
+      {/* ── Fixed search + filters ── */}
       <div ref={headerRef} style={{
         position: 'fixed', top: 0, left: 0, right: 0, zIndex: 20,
         background: 'rgba(245,245,243,0.94)',
         backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
         borderBottom: '1px solid rgba(0,0,0,0.05)',
       }}>
-        {/* App bar */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px 10px' }}>
-          <span style={{ fontSize: 22, fontWeight: 900, color: '#111', letterSpacing: '-0.04em' }}>Авторы</span>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            {(activeCount > 0 || query) && (
-              <button onClick={resetAll} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11.5, fontWeight: 600, color: '#555', background: 'rgba(0,0,0,0.07)', border: 'none', cursor: 'pointer', padding: '5px 10px 5px 8px', borderRadius: 100 }}>
-                <X size={11} strokeWidth={2.5} /> Сброс
-              </button>
-            )}
-            <button style={{ width: 36, height: 36, borderRadius: '50%', border: 'none', background: 'rgba(0,0,0,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', position: 'relative' }}>
-              <Bell size={16} color="#444" />
-              <div style={{ position: 'absolute', top: 8, right: 8, width: 6, height: 6, borderRadius: '50%', background: '#0D0D0D', border: '1.5px solid #F5F5F3' }} />
-            </button>
-            <div style={{ width: 36, height: 36, borderRadius: '50%', background: '#3A4A5C', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: '#fff', cursor: 'pointer' }}>AK</div>
-          </div>
-        </div>
-
         {/* Search input */}
-        <div style={{ padding: '0 16px 10px' }}>
+        <div style={{ padding: '12px 16px 10px' }}>
           <div style={{ position: 'relative', height: 46 }}>
             <Search size={15} color="rgba(0,0,0,0.3)" style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
             <input
@@ -274,7 +257,7 @@ export default function CreatorsPage() {
         </div>
 
         {/* Spec chips */}
-        <div style={{ overflowX: 'auto', scrollbarWidth: 'none', padding: '0 0 0' }}>
+        <div style={{ overflowX: 'auto', scrollbarWidth: 'none' }}>
           <div style={{ display: 'flex', gap: 6, padding: '0 16px' }}>
             <FilterChip label="Все" active={!selSpec && !selCity} onClick={() => { setSelSpec(null); setSelCity(null); }} />
             {ALL_SPECS.map(spec => (
@@ -290,6 +273,23 @@ export default function CreatorsPage() {
               <FilterChip key={city} label={city} active={selCity === city} onClick={() => setSelCity(v => v === city ? null : city)} />
             ))}
           </div>
+        </div>
+      </div>
+
+      {/* ── Scrollable header (title + actions) ── */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px 10px' }}>
+        <span style={{ fontSize: 22, fontWeight: 900, color: '#111', letterSpacing: '-0.04em' }}>Авторы</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          {(activeCount > 0 || query) && (
+            <button onClick={resetAll} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11.5, fontWeight: 600, color: '#555', background: 'rgba(0,0,0,0.07)', border: 'none', cursor: 'pointer', padding: '5px 10px 5px 8px', borderRadius: 100 }}>
+              <X size={11} strokeWidth={2.5} /> Сброс
+            </button>
+          )}
+          <button style={{ width: 36, height: 36, borderRadius: '50%', border: 'none', background: 'rgba(0,0,0,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', position: 'relative' }}>
+            <Bell size={16} color="#444" />
+            <div style={{ position: 'absolute', top: 8, right: 8, width: 6, height: 6, borderRadius: '50%', background: '#0D0D0D', border: '1.5px solid #F5F5F3' }} />
+          </button>
+          <div style={{ width: 36, height: 36, borderRadius: '50%', background: '#3A4A5C', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: '#fff', cursor: 'pointer' }}>AK</div>
         </div>
       </div>
 
