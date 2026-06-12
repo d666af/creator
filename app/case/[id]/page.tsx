@@ -1,9 +1,295 @@
 'use client';
 
-import { use, useState, useEffect, useRef, type ReactNode } from 'react';
+import { use, useState, useEffect, useRef, useCallback, type ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Share2, Play, Eye, Star, Send } from 'lucide-react';
-import { type CaseItem, ALL_CASES, findCase, ytMaxThumb, ytPlayer, ytThumb } from '@/lib/data';
+import { ArrowLeft, Share2, Play, Pause, Volume2, VolumeX, Maximize, Eye, Star, Send } from 'lucide-react';
+import { type CaseItem, ALL_CASES, findCase, ytMaxThumb, ytThumb } from '@/lib/data';
+
+// ─── YouTube IFrame API types ─────────────────────────────────────────────────
+
+declare global {
+  interface Window {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    YT: any;
+    onYouTubeIframeAPIReady: () => void;
+  }
+}
+
+// ─── Custom YouTube Player ────────────────────────────────────────────────────
+
+function formatTime(s: number) {
+  if (!isFinite(s) || s < 0) return '0:00';
+  return `${Math.floor(s / 60)}:${Math.floor(s % 60).toString().padStart(2, '0')}`;
+}
+
+function CustomPlayer({ videoId, thumbnailUrl }: { videoId: string; thumbnailUrl: string }) {
+  const playerId = `yt-${videoId}`;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const playerRef = useRef<any>(null);
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  const hideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const [started, setStarted] = useState(false);   // user clicked play at least once
+  const [ready, setReady] = useState(false);
+  const [playing, setPlaying] = useState(false);
+  const [muted, setMuted] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [showControls, setShowControls] = useState(true);
+  const [seeking, setSeeking] = useState(false);
+
+  // Load/init YouTube IFrame API
+  useEffect(() => {
+    const init = () => {
+      if (!document.getElementById(playerId)) return;
+      playerRef.current = new window.YT.Player(playerId, {
+        videoId,
+        playerVars: {
+          controls: 0,
+          disablekb: 1,
+          rel: 0,
+          modestbranding: 1,
+          iv_load_policy: 3,
+          enablejsapi: 1,
+          origin: typeof window !== 'undefined' ? window.location.origin : '',
+        },
+        events: {
+          onReady: () => setReady(true),
+          onStateChange: (e: { data: number }) => {
+            setPlaying(e.data === 1);
+            const dur = playerRef.current?.getDuration?.() ?? 0;
+            if (dur > 0) setDuration(dur);
+          },
+        },
+      });
+    };
+
+    if (typeof window !== 'undefined') {
+      if (window.YT?.Player) {
+        init();
+      } else {
+        if (!document.getElementById('yt-iframe-api')) {
+          const tag = document.createElement('script');
+          tag.id = 'yt-iframe-api';
+          tag.src = 'https://www.youtube.com/iframe_api';
+          document.head.appendChild(tag);
+        }
+        const prev = window.onYouTubeIframeAPIReady;
+        window.onYouTubeIframeAPIReady = () => {
+          if (typeof prev === 'function') prev();
+          init();
+        };
+      }
+    }
+
+    return () => { playerRef.current?.destroy?.(); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [videoId]);
+
+  // Progress ticker
+  useEffect(() => {
+    if (!playing || !ready || seeking) return;
+    const t = setInterval(() => {
+      const ct = playerRef.current?.getCurrentTime?.() ?? 0;
+      const dur = playerRef.current?.getDuration?.() ?? 0;
+      setCurrentTime(ct);
+      if (dur > 0) setDuration(dur);
+    }, 250);
+    return () => clearInterval(t);
+  }, [playing, ready, seeking]);
+
+  const scheduleHide = useCallback(() => {
+    if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
+    hideTimerRef.current = setTimeout(() => setShowControls(false), 3000);
+  }, []);
+
+  const showAndScheduleHide = useCallback(() => {
+    setShowControls(true);
+    scheduleHide();
+  }, [scheduleHide]);
+
+  const handleWrapperMouseMove = useCallback(() => {
+    if (started) showAndScheduleHide();
+  }, [started, showAndScheduleHide]);
+
+  const handleStart = () => {
+    setStarted(true);
+    playerRef.current?.playVideo?.();
+    showAndScheduleHide();
+  };
+
+  const togglePlay = () => {
+    if (playing) {
+      playerRef.current?.pauseVideo?.();
+      setShowControls(true);
+      if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
+    } else {
+      playerRef.current?.playVideo?.();
+      showAndScheduleHide();
+    }
+  };
+
+  const toggleMute = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (muted) { playerRef.current?.unMute?.(); setMuted(false); }
+    else { playerRef.current?.mute?.(); setMuted(true); }
+  };
+
+  const handleSeek = (e: React.MouseEvent<HTMLDivElement>) => {
+    e.stopPropagation();
+    const rect = e.currentTarget.getBoundingClientRect();
+    const f = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+    playerRef.current?.seekTo?.(duration * f, true);
+    setCurrentTime(duration * f);
+  };
+
+  const handleFullscreen = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    wrapperRef.current?.requestFullscreen?.();
+  };
+
+  const progress = duration > 0 ? currentTime / duration : 0;
+
+  return (
+    <div
+      ref={wrapperRef}
+      onMouseMove={handleWrapperMouseMove}
+      style={{ position: 'relative', width: '100%', aspectRatio: '16/9', background: '#000', cursor: started ? 'none' : 'pointer' }}
+    >
+      {/* YT player target — replaced by iframe by the API */}
+      <div
+        id={playerId}
+        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}
+      />
+
+      {/* Thumbnail + initial play CTA (before user starts) */}
+      {!started && (
+        <div
+          onClick={handleStart}
+          style={{
+            position: 'absolute', inset: 0, zIndex: 3, cursor: 'pointer',
+            backgroundImage: `url(${thumbnailUrl})`,
+            backgroundSize: 'cover', backgroundPosition: 'center',
+          }}
+        >
+          <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.3)' }} />
+          <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{
+              width: 72, height: 72, borderRadius: '50%', background: '#fff',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              boxShadow: '0 12px 40px rgba(0,0,0,0.4)',
+              transition: 'transform 0.2s ease',
+            }}>
+              <Play size={28} fill="#111" stroke="none" style={{ marginLeft: 5 }} />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Click overlay to toggle play/pause (when started) */}
+      {started && (
+        <div
+          onClick={togglePlay}
+          style={{ position: 'absolute', inset: 0, zIndex: 2, cursor: showControls ? 'default' : 'none' }}
+        />
+      )}
+
+      {/* Big pause/play indicator flash */}
+      {started && !playing && showControls && (
+        <div style={{
+          position: 'absolute', inset: 0, zIndex: 3,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          pointerEvents: 'none',
+        }}>
+          <div style={{
+            width: 64, height: 64, borderRadius: '50%',
+            background: 'rgba(255,255,255,0.15)',
+            backdropFilter: 'blur(10px)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            <Play size={24} fill="#fff" stroke="none" style={{ marginLeft: 4 }} />
+          </div>
+        </div>
+      )}
+
+      {/* Controls bar */}
+      {started && (
+        <div
+          style={{
+            position: 'absolute', bottom: 0, left: 0, right: 0, zIndex: 4,
+            padding: '32px 16px 14px',
+            background: 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, transparent 100%)',
+            opacity: showControls ? 1 : 0,
+            transition: 'opacity 0.35s ease',
+            pointerEvents: showControls ? 'auto' : 'none',
+          }}
+          onClick={e => e.stopPropagation()}
+        >
+          {/* Progress bar */}
+          <div
+            onMouseDown={(e) => { setSeeking(true); handleSeek(e); }}
+            onMouseMove={(e) => { if (seeking) handleSeek(e); }}
+            onMouseUp={(e) => { setSeeking(false); handleSeek(e); }}
+            onMouseLeave={() => setSeeking(false)}
+            onClick={handleSeek}
+            style={{
+              width: '100%', height: 4, background: 'rgba(255,255,255,0.2)',
+              borderRadius: 2, marginBottom: 12, cursor: 'pointer',
+              position: 'relative',
+            }}
+          >
+            {/* Buffered (visual approximation) */}
+            <div style={{ position: 'absolute', inset: 0, background: 'rgba(255,255,255,0.1)', borderRadius: 2 }} />
+            {/* Progress fill */}
+            <div style={{
+              position: 'absolute', left: 0, top: 0, bottom: 0,
+              width: `${progress * 100}%`,
+              background: '#fff', borderRadius: 2,
+              transition: seeking ? 'none' : 'width 0.25s linear',
+            }} />
+            {/* Scrubber dot */}
+            <div style={{
+              position: 'absolute', top: '50%', left: `${progress * 100}%`,
+              transform: 'translate(-50%, -50%)',
+              width: 12, height: 12, borderRadius: '50%', background: '#fff',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.4)',
+              transition: seeking ? 'none' : 'left 0.25s linear',
+            }} />
+          </div>
+
+          {/* Controls row */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+            <button onClick={(e) => { e.stopPropagation(); togglePlay(); }} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center' }}>
+              {playing
+                ? <Pause size={20} fill="#fff" stroke="none" />
+                : <Play size={20} fill="#fff" stroke="none" />
+              }
+            </button>
+
+            <span style={{ fontSize: 11.5, color: 'rgba(255,255,255,0.8)', fontVariantNumeric: 'tabular-nums', letterSpacing: '0.02em' }}>
+              {formatTime(currentTime)}
+              <span style={{ color: 'rgba(255,255,255,0.35)', margin: '0 3px' }}>/</span>
+              {formatTime(duration)}
+            </span>
+
+            <div style={{ flex: 1 }} />
+
+            <button onClick={toggleMute} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center' }}>
+              {muted
+                ? <VolumeX size={18} color="rgba(255,255,255,0.85)" />
+                : <Volume2 size={18} color="rgba(255,255,255,0.85)" />
+              }
+            </button>
+
+            <button onClick={handleFullscreen} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center' }}>
+              <Maximize size={17} color="rgba(255,255,255,0.85)" />
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 // ─── Scroll reveal ────────────────────────────────────────────────────────────
 
@@ -23,25 +309,12 @@ function useScrollReveal(threshold = 0.08) {
   return { ref, visible };
 }
 
-// ─── Section wrapper ──────────────────────────────────────────────────────────
-
 function Reveal({ children, label }: { children: ReactNode; label?: string }) {
   const { ref, visible } = useScrollReveal();
   return (
-    <div
-      ref={ref}
-      style={{
-        opacity: visible ? 1 : 0,
-        transform: visible ? 'none' : 'translateY(18px)',
-        transition: 'opacity 0.5s ease, transform 0.5s cubic-bezier(0.16,1,0.3,1)',
-      }}
-    >
+    <div ref={ref} style={{ opacity: visible ? 1 : 0, transform: visible ? 'none' : 'translateY(18px)', transition: 'opacity 0.5s ease, transform 0.5s cubic-bezier(0.16,1,0.3,1)' }}>
       {label && (
-        <div style={{
-          fontSize: 10, fontWeight: 700, color: '#C0C0BC',
-          textTransform: 'uppercase', letterSpacing: '0.09em',
-          marginBottom: 14, padding: '0 20px',
-        }}>
+        <div style={{ fontSize: 10, fontWeight: 700, color: '#C0C0BC', textTransform: 'uppercase', letterSpacing: '0.09em', marginBottom: 14, padding: '0 20px' }}>
           {label}
         </div>
       )}
@@ -61,36 +334,18 @@ const COMMENTS = [
   { id: 2, initials: 'ZM', color: '#3A5C48', name: 'Зульфия М.', time: '5 ч назад', text: 'Вау, какой цвет! Это DaVinci?' },
 ];
 
-// ─── Mini card for "more" section ────────────────────────────────────────────
+// ─── Mini card ────────────────────────────────────────────────────────────────
 
 function MiniCard({ item, onClick }: { item: CaseItem; onClick: () => void }) {
   const [hovered, setHovered] = useState(false);
   return (
-    <div
-      onClick={onClick}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      style={{ flexShrink: 0, width: 160, cursor: 'pointer' }}
-    >
-      <div style={{
-        width: '100%', aspectRatio: '16/9', borderRadius: 12,
-        overflow: 'hidden', background: '#111', marginBottom: 8,
-        transform: hovered ? 'scale(0.97)' : 'scale(1)',
-        transition: 'transform 0.25s cubic-bezier(0.16,1,0.3,1)',
-      }}>
+    <div onClick={onClick} onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)} style={{ flexShrink: 0, width: 160, cursor: 'pointer' }}>
+      <div style={{ width: '100%', aspectRatio: '16/9', borderRadius: 12, overflow: 'hidden', background: '#111', marginBottom: 8, transform: hovered ? 'scale(0.97)' : 'scale(1)', transition: 'transform 0.25s cubic-bezier(0.16,1,0.3,1)' }}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={ytThumb(item.youtubeId)}
-          alt=""
-          style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-        />
+        <img src={ytThumb(item.youtubeId)} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
       </div>
-      <div style={{ fontSize: 12, fontWeight: 600, color: '#111', lineHeight: 1.35, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-        {item.title}
-      </div>
-      <div style={{ fontSize: 10.5, color: '#AAA', marginTop: 3, display: 'flex', alignItems: 'center', gap: 3 }}>
-        <Eye size={9} /> {item.views}
-      </div>
+      <div style={{ fontSize: 12, fontWeight: 600, color: '#111', lineHeight: 1.35, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.title}</div>
+      <div style={{ fontSize: 10.5, color: '#AAA', marginTop: 3, display: 'flex', alignItems: 'center', gap: 3 }}><Eye size={9} /> {item.views}</div>
     </div>
   );
 }
@@ -102,7 +357,6 @@ export default function CasePage({ params }: { params: Promise<{ id: string }> }
   const router = useRouter();
 
   const item = findCase(id);
-  const [playing, setPlaying] = useState(false);
   const [comment, setComment] = useState('');
 
   useEffect(() => { window.scrollTo(0, 0); }, []);
@@ -113,9 +367,7 @@ export default function CasePage({ params }: { params: Promise<{ id: string }> }
 
   if (!item) return null;
 
-  const moreItems = ALL_CASES
-    .filter(c => c.creator === item.creator && c.id !== item.id)
-    .slice(0, 5);
+  const moreItems = ALL_CASES.filter(c => c.creator === item.creator && c.id !== item.id).slice(0, 5);
 
   const handleShare = () => {
     if (typeof navigator !== 'undefined' && navigator.share) {
@@ -129,101 +381,29 @@ export default function CasePage({ params }: { params: Promise<{ id: string }> }
       {/* ── Floating controls ── */}
       <button
         onClick={() => router.back()}
-        style={{
-          position: 'fixed', top: 14, left: 14, zIndex: 60,
-          width: 40, height: 40, borderRadius: '50%',
-          background: 'rgba(0,0,0,0.5)',
-          backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
-          border: '1px solid rgba(255,255,255,0.12)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
-        }}
+        style={{ position: 'fixed', top: 14, left: 14, zIndex: 60, width: 40, height: 40, borderRadius: '50%', background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', border: '1px solid rgba(255,255,255,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
       >
         <ArrowLeft size={17} color="#fff" />
       </button>
       <button
         onClick={handleShare}
-        style={{
-          position: 'fixed', top: 14, right: 14, zIndex: 60,
-          width: 40, height: 40, borderRadius: '50%',
-          background: 'rgba(0,0,0,0.5)',
-          backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
-          border: '1px solid rgba(255,255,255,0.12)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
-        }}
+        style={{ position: 'fixed', top: 14, right: 14, zIndex: 60, width: 40, height: 40, borderRadius: '50%', background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', border: '1px solid rgba(255,255,255,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
       >
         <Share2 size={16} color="#fff" />
       </button>
 
-      {/* ── Video ── */}
-      <div style={{ width: '100%', aspectRatio: '16/9', position: 'relative', background: '#000' }}>
-        {playing ? (
-          <iframe
-            src={ytPlayer(item.youtubeId)}
-            allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
-            allowFullScreen
-            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', border: 'none' }}
-          />
-        ) : (
-          <div
-            onClick={() => setPlaying(true)}
-            style={{
-              position: 'absolute', inset: 0, cursor: 'pointer',
-              backgroundImage: `url(${ytMaxThumb(item.youtubeId)})`,
-              backgroundSize: 'cover', backgroundPosition: 'center',
-            }}
-          >
-            <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.28)' }} />
-            <div style={{
-              position: 'absolute', inset: 0,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-            }}>
-              <div style={{
-                width: 68, height: 68, borderRadius: '50%',
-                background: 'rgba(255,255,255,0.96)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                boxShadow: '0 10px 40px rgba(0,0,0,0.35)',
-              }}>
-                <Play size={26} fill="#111" stroke="none" style={{ marginLeft: 4 }} />
-              </div>
-            </div>
-            {item.duration && (
-              <div style={{
-                position: 'absolute', bottom: 12, right: 12,
-                background: 'rgba(0,0,0,0.62)', color: '#fff',
-                fontSize: 11, fontWeight: 500, padding: '3px 8px', borderRadius: 6,
-              }}>
-                {item.duration}
-              </div>
-            )}
-          </div>
-        )}
-      </div>
+      {/* ── Custom player ── */}
+      <CustomPlayer videoId={item.youtubeId} thumbnailUrl={ytMaxThumb(item.youtubeId)} />
 
-      {/* ── Content card (slides up from under video) ── */}
-      <div style={{
-        background: '#fff',
-        borderRadius: '24px 24px 0 0',
-        marginTop: -20,
-        position: 'relative', zIndex: 1,
-        paddingTop: 10,
-        animation: 'slideUp 0.5s cubic-bezier(0.16,1,0.3,1)',
-      }}>
+      {/* ── Content card ── */}
+      <div style={{ background: '#fff', borderRadius: '24px 24px 0 0', marginTop: -20, position: 'relative', zIndex: 1, paddingTop: 10, animation: 'slideUp 0.5s cubic-bezier(0.16,1,0.3,1)' }}>
 
-        {/* Drag handle decoration */}
-        <div style={{
-          width: 36, height: 4, borderRadius: 2,
-          background: '#E0E0DE', margin: '0 auto 22px',
-        }} />
+        <div style={{ width: 36, height: 4, borderRadius: 2, background: '#E0E0DE', margin: '0 auto 22px' }} />
 
-        {/* ── Author row ── */}
+        {/* ── Author ── */}
         <div style={{ padding: '0 20px 22px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
-            <div style={{
-              width: 50, height: 50, borderRadius: '50%',
-              background: item.avatarColor,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 13, fontWeight: 700, color: '#fff', flexShrink: 0,
-            }}>
+            <div style={{ width: 50, height: 50, borderRadius: '50%', background: item.avatarColor, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 700, color: '#fff', flexShrink: 0 }}>
               {item.initials}
             </div>
             <div style={{ flex: 1 }}>
@@ -232,24 +412,12 @@ export default function CasePage({ params }: { params: Promise<{ id: string }> }
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
               {[1,2,3,4,5].map(i => (
-                <Star
-                  key={i}
-                  size={11}
-                  fill={i <= Math.round(item.rating) ? '#C8A96E' : 'none'}
-                  stroke={i <= Math.round(item.rating) ? '#C8A96E' : '#DDD'}
-                />
+                <Star key={i} size={11} fill={i <= Math.round(item.rating) ? '#C8A96E' : 'none'} stroke={i <= Math.round(item.rating) ? '#C8A96E' : '#DDD'} />
               ))}
               <span style={{ fontSize: 11.5, color: '#AAA', marginLeft: 4 }}>{item.rating}</span>
             </div>
           </div>
-
-          <button style={{
-            width: '100%', height: 50,
-            background: '#0D0D0D', color: '#fff',
-            border: 'none', borderRadius: 16,
-            fontSize: 15, fontWeight: 600, cursor: 'pointer',
-            letterSpacing: '-0.01em',
-          }}>
+          <button style={{ width: '100%', height: 50, background: '#0D0D0D', color: '#fff', border: 'none', borderRadius: 16, fontSize: 15, fontWeight: 600, cursor: 'pointer', letterSpacing: '-0.01em' }}>
             Написать автору
           </button>
         </div>
@@ -260,48 +428,20 @@ export default function CasePage({ params }: { params: Promise<{ id: string }> }
         <Reveal>
           <div style={{ padding: '24px 20px 0' }}>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 16 }}>
-              <span style={{
-                fontSize: 52, fontWeight: 900, letterSpacing: '-0.04em',
-                lineHeight: 1, color: '#0D0D0D',
-              }}>
-                {item.views}
-              </span>
+              <span style={{ fontSize: 52, fontWeight: 900, letterSpacing: '-0.04em', lineHeight: 1, color: '#0D0D0D' }}>{item.views}</span>
               <span style={{ fontSize: 12, color: '#CCC', paddingBottom: 5 }}>просмотров</span>
             </div>
-
-            <div style={{
-              fontSize: 22, fontWeight: 800, color: '#0D0D0D',
-              letterSpacing: '-0.03em', lineHeight: 1.25,
-              marginBottom: 14,
-            }}>
+            <div style={{ fontSize: 22, fontWeight: 800, color: '#0D0D0D', letterSpacing: '-0.03em', lineHeight: 1.25, marginBottom: 14 }}>
               {item.title}
             </div>
-
-            <div style={{
-              fontSize: 14.5, color: '#555', lineHeight: 1.75,
-              marginBottom: 18,
-            }}>
+            <div style={{ fontSize: 14.5, color: '#555', lineHeight: 1.75, marginBottom: 18 }}>
               {item.story}
             </div>
-
-            {/* Result highlight */}
-            <div style={{
-              background: '#F5F5F3', borderRadius: 14,
-              padding: '14px 16px',
-              display: 'flex', alignItems: 'stretch', gap: 14,
-              marginBottom: 24,
-            }}>
+            <div style={{ background: '#F5F5F3', borderRadius: 14, padding: '14px 16px', display: 'flex', alignItems: 'stretch', gap: 14, marginBottom: 24 }}>
               <div style={{ width: 3, background: '#0D0D0D', borderRadius: 2, flexShrink: 0 }} />
               <div>
-                <div style={{
-                  fontSize: 10, fontWeight: 700, color: '#BBBBBB',
-                  textTransform: 'uppercase', letterSpacing: '0.09em', marginBottom: 5,
-                }}>
-                  Результат
-                </div>
-                <div style={{ fontSize: 15, fontWeight: 700, color: '#0D0D0D' }}>
-                  {item.result}
-                </div>
+                <div style={{ fontSize: 10, fontWeight: 700, color: '#BBBBBB', textTransform: 'uppercase', letterSpacing: '0.09em', marginBottom: 5 }}>Результат</div>
+                <div style={{ fontSize: 15, fontWeight: 700, color: '#0D0D0D' }}>{item.result}</div>
               </div>
             </div>
           </div>
@@ -314,11 +454,7 @@ export default function CasePage({ params }: { params: Promise<{ id: string }> }
         <Reveal label="Что сделал автор">
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, padding: '0 20px' }}>
             {item.roles.map(role => (
-              <span key={role} style={{
-                background: '#F5F5F3', color: '#333',
-                borderRadius: 10, fontSize: 13, fontWeight: 500,
-                padding: '9px 16px', border: '1px solid #E8E8E6',
-              }}>
+              <span key={role} style={{ background: '#F5F5F3', color: '#333', borderRadius: 10, fontSize: 13, fontWeight: 500, padding: '9px 16px', border: '1px solid #E8E8E6' }}>
                 {role}
               </span>
             ))}
@@ -333,24 +469,11 @@ export default function CasePage({ params }: { params: Promise<{ id: string }> }
           <>
             <div style={{ height: 24 }} />
             <Reveal label="Медиа">
-              <div
-                style={{
-                  display: 'flex', gap: 8, overflowX: 'auto',
-                  paddingLeft: 20, paddingRight: 20, paddingBottom: 4,
-                }}
-                className="no-scrollbar"
-              >
+              <div style={{ display: 'flex', gap: 8, overflowX: 'auto', paddingLeft: 20, paddingRight: 20, paddingBottom: 4 }} className="no-scrollbar">
                 {item.galleryIds.map((gid, i) => (
-                  <div key={i} style={{
-                    flexShrink: 0, width: 140, height: 79,
-                    borderRadius: 11, overflow: 'hidden', background: '#111',
-                  }}>
+                  <div key={i} style={{ flexShrink: 0, width: 140, height: 79, borderRadius: 11, overflow: 'hidden', background: '#111' }}>
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={ytThumb(gid)}
-                      alt=""
-                      style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-                    />
+                    <img src={ytThumb(gid)} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
                   </div>
                 ))}
               </div>
@@ -365,23 +488,11 @@ export default function CasePage({ params }: { params: Promise<{ id: string }> }
         <Reveal label="Категория и теги">
           <div style={{ padding: '0 20px' }}>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7, marginBottom: 10 }}>
-              <span style={{
-                background: '#0D0D0D', color: '#fff',
-                borderRadius: 10, fontSize: 13, fontWeight: 600,
-                padding: '8px 16px',
-              }}>
-                {item.category}
-              </span>
+              <span style={{ background: '#0D0D0D', color: '#fff', borderRadius: 10, fontSize: 13, fontWeight: 600, padding: '8px 16px' }}>{item.category}</span>
             </div>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
               {item.tags.map(tag => (
-                <span key={tag} style={{
-                  background: '#F5F5F3', color: '#888',
-                  borderRadius: 10, fontSize: 13, fontWeight: 500,
-                  padding: '8px 14px', border: '1px solid #EAEAE8',
-                }}>
-                  {tag}
-                </span>
+                <span key={tag} style={{ background: '#F5F5F3', color: '#888', borderRadius: 10, fontSize: 13, fontWeight: 500, padding: '8px 14px', border: '1px solid #EAEAE8' }}>{tag}</span>
               ))}
             </div>
           </div>
@@ -397,14 +508,7 @@ export default function CasePage({ params }: { params: Promise<{ id: string }> }
             <div style={{ display: 'flex', flexDirection: 'column', gap: 20, marginBottom: 20 }}>
               {COMMENTS.map(c => (
                 <div key={c.id} style={{ display: 'flex', gap: 10 }}>
-                  <div style={{
-                    width: 34, height: 34, borderRadius: '50%',
-                    background: c.color,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: 9, fontWeight: 700, color: '#fff', flexShrink: 0,
-                  }}>
-                    {c.initials}
-                  </div>
+                  <div style={{ width: 34, height: 34, borderRadius: '50%', background: c.color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 700, color: '#fff', flexShrink: 0 }}>{c.initials}</div>
                   <div>
                     <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 4 }}>
                       <span style={{ fontSize: 12.5, fontWeight: 700, color: '#111' }}>{c.name}</span>
@@ -415,29 +519,9 @@ export default function CasePage({ params }: { params: Promise<{ id: string }> }
                 </div>
               ))}
             </div>
-
-            {/* Input */}
-            <div style={{
-              display: 'flex', alignItems: 'center', gap: 10,
-              background: '#F5F5F3', borderRadius: 14,
-              padding: '10px 10px 10px 16px',
-            }}>
-              <input
-                value={comment}
-                onChange={e => setComment(e.target.value)}
-                placeholder="Написать комментарий..."
-                style={{
-                  flex: 1, background: 'none', border: 'none', outline: 'none',
-                  fontSize: 13.5, color: '#111',
-                }}
-              />
-              <button style={{
-                width: 34, height: 34, borderRadius: '50%',
-                background: comment.trim() ? '#0D0D0D' : '#E4E4E2',
-                border: 'none', cursor: 'pointer',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                flexShrink: 0, transition: 'background 0.2s ease',
-              }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: '#F5F5F3', borderRadius: 14, padding: '10px 10px 10px 16px' }}>
+              <input value={comment} onChange={e => setComment(e.target.value)} placeholder="Написать комментарий..." style={{ flex: 1, background: 'none', border: 'none', outline: 'none', fontSize: 13.5, color: '#111' }} />
+              <button style={{ width: 34, height: 34, borderRadius: '50%', background: comment.trim() ? '#0D0D0D' : '#E4E4E2', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'background 0.2s ease' }}>
                 <Send size={14} color={comment.trim() ? '#fff' : '#AAA'} />
               </button>
             </div>
@@ -451,19 +535,9 @@ export default function CasePage({ params }: { params: Promise<{ id: string }> }
             <Divider />
             <div style={{ height: 24 }} />
             <Reveal label={`Ещё от ${item.creator.split(' ')[0]}`}>
-              <div
-                style={{
-                  display: 'flex', gap: 10, overflowX: 'auto',
-                  paddingLeft: 20, paddingRight: 20, paddingBottom: 4,
-                }}
-                className="no-scrollbar"
-              >
+              <div style={{ display: 'flex', gap: 10, overflowX: 'auto', paddingLeft: 20, paddingRight: 20, paddingBottom: 4 }} className="no-scrollbar">
                 {moreItems.map(c => (
-                  <MiniCard
-                    key={c.id}
-                    item={c}
-                    onClick={() => router.push('/case/' + c.id)}
-                  />
+                  <MiniCard key={c.id} item={c} onClick={() => router.push('/case/' + c.id)} />
                 ))}
               </div>
             </Reveal>
