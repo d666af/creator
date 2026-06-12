@@ -289,6 +289,36 @@ export const TICKER_ITEMS = [
 
 export const ALL_CASES = SECTIONS.flatMap(s => s.cases);
 
+// ─── Job postings ─────────────────────────────────────────────────────────────
+
+export type JobPosting = {
+  id: string;
+  title: string;
+  brand: string;
+  brandInitials: string;
+  brandColor: string;
+  type: string;
+  typeColor: string;
+  budget: string;
+  deadline: string;
+  isNew: boolean;
+  isUrgent: boolean;
+  postedAt: string;
+  spec: string;
+  city: string;
+  applicants: number;
+};
+
+export const JOB_POSTINGS: JobPosting[] = [
+  { id: 'j1', title: 'Reels для запуска новой коллекции', brand: 'Zara UZ', brandInitials: 'ZU', brandColor: '#1A1A2E', type: 'Reels', typeColor: '#7C3AED', budget: '$80–150', deadline: '5 дней', isNew: true, isUrgent: false, postedAt: '2 часа назад', spec: 'Мобилограф', city: 'Ташкент', applicants: 3 },
+  { id: 'j2', title: 'YouTube-шоу о кухне Узбекистана', brand: 'Samarkand Food', brandInitials: 'SF', brandColor: '#7C2D12', type: 'YouTube', typeColor: '#DC2626', budget: '$200–400', deadline: '2 недели', isNew: true, isUrgent: false, postedAt: '5 часов назад', spec: 'Видеограф', city: 'Самарканд', applicants: 7 },
+  { id: 'j3', title: 'Монтаж рекламного ролика 30с', brand: 'AdCraft', brandInitials: 'AC', brandColor: '#064E3B', type: 'Монтаж', typeColor: '#059669', budget: '$50–80', deadline: '3 дня', isNew: false, isUrgent: true, postedAt: '1 день назад', spec: 'Монтажёр', city: 'Ташкент', applicants: 12 },
+  { id: 'j4', title: 'Fashion Reels × 5 видео', brand: 'Silk Road', brandInitials: 'SR', brandColor: '#4C1D95', type: 'Reels', typeColor: '#7C3AED', budget: '$300', deadline: '10 дней', isNew: false, isUrgent: false, postedAt: '2 дня назад', spec: 'Мобилограф', city: 'Бухара', applicants: 5 },
+  { id: 'j5', title: 'Съёмка продукта для e-commerce', brand: 'Uzum Market', brandInitials: 'UM', brandColor: '#7E1D3F', type: 'Фото/видео', typeColor: '#DB2777', budget: '$120–200', deadline: '1 неделя', isNew: false, isUrgent: false, postedAt: '3 дня назад', spec: 'Видеограф', city: 'Ташкент', applicants: 9 },
+  { id: 'j6', title: 'Цветокоррекция 10 роликов', brand: 'CreativeHub', brandInitials: 'CH', brandColor: '#1E3A5F', type: 'Колористика', typeColor: '#0284C7', budget: '$60', deadline: '4 дня', isNew: false, isUrgent: true, postedAt: '3 дня назад', spec: 'Колорист', city: 'Любой', applicants: 4 },
+  { id: 'j7', title: 'Сценарий для YouTube-канала', brand: 'TechTalk UZ', brandInitials: 'TT', brandColor: '#134E4A', type: 'Сценарий', typeColor: '#0D9488', budget: '$40–70', deadline: '6 дней', isNew: false, isUrgent: false, postedAt: '4 дня назад', spec: 'Сценарист', city: 'Онлайн', applicants: 6 },
+];
+
 export function findCase(id: string): CaseItem | undefined {
   return ALL_CASES.find(c => c.id === id);
 }
