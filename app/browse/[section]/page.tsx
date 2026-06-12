@@ -136,6 +136,7 @@ function BrowseCard({
         <img
           src={thumb}
           alt={item.title}
+          onError={(e) => { (e.currentTarget as HTMLImageElement).src = `https://img.youtube.com/vi/${item.thumbId}/hqdefault.jpg`; }}
           style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
         />
         {/* Bottom gradient + views */}

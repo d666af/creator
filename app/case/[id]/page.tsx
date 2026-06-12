@@ -184,12 +184,15 @@ function CustomPlayer({ videoId, thumbnailUrl, isPortrait }: { videoId: string; 
       {!started && (
         <div
           onClick={handleStart}
-          style={{
-            position: 'absolute', inset: 0, zIndex: 3, cursor: 'pointer',
-            backgroundImage: `url(${thumbnailUrl})`,
-            backgroundSize: 'cover', backgroundPosition: 'center',
-          }}
+          style={{ position: 'absolute', inset: 0, zIndex: 3, cursor: 'pointer', overflow: 'hidden' }}
         >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={thumbnailUrl}
+            alt=""
+            onError={(e) => { (e.currentTarget as HTMLImageElement).src = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`; }}
+            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+          />
           <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.3)' }} />
           <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <div style={{
