@@ -392,12 +392,19 @@ function BentoCard({ item, onClick }: { item: CaseItem; onClick: (c: CaseItem) =
 
 function BentoSection({ section, onCaseClick }: { section: Section; onCaseClick: (c: CaseItem) => void }) {
   const { ref, visible } = useScrollReveal(0.05);
+  const router = useRouter();
   const [a, b, c] = section.cases;
   return (
     <div ref={ref} style={{ opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(28px)', transition: 'opacity 0.55s ease, transform 0.55s cubic-bezier(0.16,1,0.3,1)' }}>
-      <div style={{ padding: '0 16px', marginBottom: 16, position: 'relative' }}>
+      <div style={{ padding: '0 16px', marginBottom: 16, position: 'relative', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
         <span style={{ position: 'absolute', left: 12, bottom: -6, fontSize: 88, fontWeight: 900, lineHeight: 1, letterSpacing: '-0.04em', userSelect: 'none', pointerEvents: 'none', color: 'rgba(0,0,0,0.04)' }}>{section.num}</span>
         <span style={{ fontSize: 20, fontWeight: 800, letterSpacing: '-0.03em', color: '#0D0D0D', position: 'relative' }}>{section.genre}</span>
+        <button
+          onClick={() => router.push(`/browse/${section.id}`)}
+          style={{ position: 'relative', zIndex: 1, fontSize: 12, fontWeight: 600, color: '#0D0D0D', background: 'rgba(0,0,0,0.06)', border: 'none', cursor: 'pointer', padding: '5px 12px', borderRadius: 100, letterSpacing: '-0.01em' }}
+        >
+          Все →
+        </button>
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 10, padding: '0 16px' }}>
         <div style={{ aspectRatio: '4/3' }}><BentoCard item={a} onClick={onCaseClick} /></div>
@@ -412,11 +419,18 @@ function BentoSection({ section, onCaseClick }: { section: Section; onCaseClick:
 
 function SectionRow({ section, onCaseClick }: { section: Section; onCaseClick: (c: CaseItem) => void }) {
   const { ref, visible } = useScrollReveal(0.05);
+  const router = useRouter();
   return (
     <div ref={ref} style={{ opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(28px)', transition: 'opacity 0.55s ease, transform 0.55s cubic-bezier(0.16,1,0.3,1)', paddingTop: section.dark ? 28 : 0, paddingBottom: section.dark ? 28 : 0, background: section.dark ? '#0D0D0D' : 'transparent' }}>
-      <div style={{ padding: '0 16px', marginBottom: 16, position: 'relative' }}>
+      <div style={{ padding: '0 16px', marginBottom: 16, position: 'relative', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
         <span style={{ position: 'absolute', left: 12, bottom: -6, fontSize: 88, fontWeight: 900, lineHeight: 1, letterSpacing: '-0.04em', userSelect: 'none', pointerEvents: 'none', color: section.dark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.04)' }}>{section.num}</span>
         <span style={{ fontSize: 20, fontWeight: 800, letterSpacing: '-0.03em', color: section.dark ? '#fff' : '#0D0D0D', position: 'relative' }}>{section.genre}</span>
+        <button
+          onClick={() => router.push(`/browse/${section.id}`)}
+          style={{ position: 'relative', zIndex: 1, fontSize: 12, fontWeight: 600, color: section.dark ? 'rgba(255,255,255,0.7)' : '#0D0D0D', background: section.dark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)', border: 'none', cursor: 'pointer', padding: '5px 12px', borderRadius: 100, letterSpacing: '-0.01em' }}
+        >
+          Все →
+        </button>
       </div>
       <div style={{ display: 'flex', gap: 10, overflowX: 'auto', paddingLeft: 16, paddingRight: 16, paddingBottom: 6 }} className="no-scrollbar">
         {section.cases.map((item) =>

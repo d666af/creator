@@ -296,3 +296,25 @@ export function findCase(id: string): CaseItem | undefined {
 export function findCaseSection(id: string): Section | undefined {
   return SECTIONS.find(s => s.cases.some(c => c.id === id));
 }
+
+export type BrowseItem = CaseItem & { thumbId: string; browseKey: string };
+
+export function getBrowseItems(sectionId: string, count = 24): BrowseItem[] {
+  const section = SECTIONS.find(s => s.id === sectionId);
+  if (!section) return [];
+  const base = section.cases;
+  const items: BrowseItem[] = [];
+  let passIndex = 0;
+  while (items.length < count) {
+    for (const item of base) {
+      if (items.length >= count) break;
+      const thumbId =
+        passIndex === 0
+          ? item.youtubeId
+          : (item.galleryIds[(passIndex - 1) % item.galleryIds.length] ?? item.youtubeId);
+      items.push({ ...item, thumbId, browseKey: `${item.id}-${passIndex}` });
+    }
+    passIndex++;
+  }
+  return items;
+}
