@@ -8,6 +8,7 @@ import {
   SECTIONS, HERO_ITEMS, TICKER_ITEMS,
   ytThumb, ytMaxThumb,
 } from '@/lib/data';
+import { SearchOverlay } from '@/app/components/SearchOverlay';
 
 // ─── YouTube URLs ─────────────────────────────────────────────────────────────
 
@@ -448,6 +449,7 @@ export default function HomePage() {
   const router = useRouter();
   const [activeNav, setActiveNav] = useState('feed');
   const [scrolled, setScrolled] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
 
   useEffect(() => {
     const h = () => setScrolled(window.scrollY > 4);
@@ -461,36 +463,52 @@ export default function HomePage() {
 
   return (
     <>
-      <header style={{ position: 'sticky', top: 0, zIndex: 50, height: 56, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 16px', background: scrolled ? 'rgba(245,245,243,0.9)' : '#F5F5F3', backdropFilter: scrolled ? 'blur(20px)' : 'none', WebkitBackdropFilter: scrolled ? 'blur(20px)' : 'none', boxShadow: scrolled ? '0 1px 0 rgba(0,0,0,0.05)' : 'none', transition: 'background 0.2s ease, box-shadow 0.2s ease' }}>
-        <span style={{ fontSize: 21, fontWeight: 900, color: '#0D0D0D', letterSpacing: '-0.07em' }}>CH</span>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <button style={{ width: 36, height: 36, borderRadius: '50%', border: 'none', background: 'rgba(0,0,0,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}><Search size={16} color="#444" /></button>
-          <button style={{ width: 36, height: 36, borderRadius: '50%', border: 'none', background: 'rgba(0,0,0,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', position: 'relative' }}>
-            <Bell size={16} color="#444" />
-            <div style={{ position: 'absolute', top: 8, right: 8, width: 6, height: 6, borderRadius: '50%', background: '#0D0D0D', border: '1.5px solid #F5F5F3' }} />
-          </button>
-          <div style={{ width: 36, height: 36, borderRadius: '50%', background: '#3A4A5C', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: '#fff', cursor: 'pointer' }}>AK</div>
-        </div>
-      </header>
+      {/* Page content — scales back when search is open */}
+      <div style={{
+        transform: searchOpen ? 'scale(0.93)' : 'scale(1)',
+        filter: searchOpen ? 'blur(3px) brightness(0.62)' : 'none',
+        transformOrigin: 'top center',
+        transition: 'transform 0.38s cubic-bezier(0.16,1,0.3,1), filter 0.38s ease',
+        pointerEvents: searchOpen ? 'none' : 'auto',
+      }}>
+        <header style={{ position: 'sticky', top: 0, zIndex: 50, height: 56, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 16px', background: scrolled ? 'rgba(245,245,243,0.9)' : '#F5F5F3', backdropFilter: scrolled ? 'blur(20px)' : 'none', WebkitBackdropFilter: scrolled ? 'blur(20px)' : 'none', boxShadow: scrolled ? '0 1px 0 rgba(0,0,0,0.05)' : 'none', transition: 'background 0.2s ease, box-shadow 0.2s ease' }}>
+          <span style={{ fontSize: 21, fontWeight: 900, color: '#0D0D0D', letterSpacing: '-0.07em' }}>CH</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <button
+              onClick={() => setSearchOpen(true)}
+              style={{ width: 36, height: 36, borderRadius: '50%', border: 'none', background: 'rgba(0,0,0,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+            >
+              <Search size={16} color="#444" />
+            </button>
+            <button style={{ width: 36, height: 36, borderRadius: '50%', border: 'none', background: 'rgba(0,0,0,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', position: 'relative' }}>
+              <Bell size={16} color="#444" />
+              <div style={{ position: 'absolute', top: 8, right: 8, width: 6, height: 6, borderRadius: '50%', background: '#0D0D0D', border: '1.5px solid #F5F5F3' }} />
+            </button>
+            <div style={{ width: 36, height: 36, borderRadius: '50%', background: '#3A4A5C', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: '#fff', cursor: 'pointer' }}>AK</div>
+          </div>
+        </header>
 
-      <main style={{ paddingBottom: 110 }}>
-        <div style={{ padding: '14px 0 30px' }}>
-          <HeroCarousel items={HERO_ITEMS} onCaseClick={openCase} />
-        </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 34 }}>
-          {SECTIONS.map((section, i) => (
-            <>
-              {i === 2 && <Ticker key="ticker" />}
-              {section.layout === 'bento'
-                ? <BentoSection key={section.id} section={section} onCaseClick={openCase} />
-                : <SectionRow key={section.id} section={section} onCaseClick={openCase} />
-              }
-            </>
-          ))}
-        </div>
-      </main>
+        <main style={{ paddingBottom: 110 }}>
+          <div style={{ padding: '14px 0 30px' }}>
+            <HeroCarousel items={HERO_ITEMS} onCaseClick={openCase} />
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 34 }}>
+            {SECTIONS.map((section, i) => (
+              <>
+                {i === 2 && <Ticker key="ticker" />}
+                {section.layout === 'bento'
+                  ? <BentoSection key={section.id} section={section} onCaseClick={openCase} />
+                  : <SectionRow key={section.id} section={section} onCaseClick={openCase} />
+                }
+              </>
+            ))}
+          </div>
+        </main>
+      </div>
 
       <BottomNav active={activeNav} onChange={setActiveNav} />
+
+      {searchOpen && <SearchOverlay onClose={() => setSearchOpen(false)} />}
     </>
   );
 }
