@@ -6,7 +6,7 @@ import { Play, Eye, Search, Bell, Home, Users, Briefcase, User } from 'lucide-re
 import {
   type CaseItem, type Section,
   SECTIONS, HERO_ITEMS, TICKER_ITEMS,
-  ytThumb, ytPortraitThumb, ytMaxThumb,
+  ytThumb, ytMaxThumb,
 } from '@/lib/data';
 
 // ─── YouTube URLs ─────────────────────────────────────────────────────────────
@@ -227,10 +227,9 @@ function PortraitCard({ item, onClick }: { item: CaseItem; onClick: (c: CaseItem
         willChange: 'transform',
       }}
     >
-      {/* Portrait thumbnail (oardefault = 9:16 for Shorts) */}
       <div style={{
         position: 'absolute', inset: 0,
-        backgroundImage: `url(${ytPortraitThumb(item.youtubeId)})`,
+        backgroundImage: `url(${ytThumb(item.youtubeId)})`,
         backgroundSize: 'cover', backgroundPosition: 'center',
         transition: 'opacity 0.4s ease',
         opacity: preview ? 0 : 1,
