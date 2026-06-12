@@ -9,17 +9,6 @@ import {
   type BrowseItem,
 } from '@/lib/data';
 
-// ── Spec colors ────────────────────────────────────────────────────────────────
-
-const SPEC_COLOR: Record<string, string> = {
-  'Мобилограф': '#D4521E',
-  'Монтажёр':   '#1E52D4',
-  'Сценарист':  '#7B1ED4',
-  'Колорист':   '#1EA86A',
-  'Продюсер':   '#C49010',
-  'Таргетолог': '#0AAAB8',
-};
-
 // ── Category chip ──────────────────────────────────────────────────────────────
 
 function CatChip({
@@ -70,9 +59,9 @@ function CatChip({
 // ── Role / city chip ───────────────────────────────────────────────────────────
 
 function RoleChip({
-  label, count, color, active, onClick,
+  label, count, active, onClick,
 }: {
-  label: string; count: number; color: string; active: boolean; onClick: () => void;
+  label: string; count: number; active: boolean; onClick: () => void;
 }) {
   const [pressed, setPressed] = useState(false);
   return (
@@ -83,39 +72,30 @@ function RoleChip({
       onMouseLeave={() => setPressed(false)}
       style={{
         flexShrink: 0,
-        height: 34,
-        padding: '0 14px',
+        height: 42,
+        padding: '0 20px',
         borderRadius: 100,
-        border: `1.5px solid ${active ? color : 'rgba(0,0,0,0.1)'}`,
-        background: active ? `${color}12` : 'transparent',
+        border: 'none',
+        background: active ? '#111' : 'rgba(0,0,0,0.065)',
         cursor: 'pointer',
-        display: 'flex', alignItems: 'center', gap: 6,
-        transition: 'border-color 0.15s ease, background 0.15s ease, transform 0.12s cubic-bezier(0.16,1,0.3,1)',
-        transform: pressed ? 'scale(0.94)' : 'scale(1)',
+        display: 'flex', alignItems: 'center', gap: 8,
+        transition: 'background 0.16s ease, transform 0.12s cubic-bezier(0.16,1,0.3,1), box-shadow 0.16s ease',
+        transform: pressed ? 'scale(0.95)' : active ? 'scale(1.02)' : 'scale(1)',
+        boxShadow: active ? '0 4px 14px rgba(0,0,0,0.18)' : 'none',
       }}
     >
-      {/* Indicator bar */}
       <span style={{
-        display: 'block',
-        width: active ? 10 : 5,
-        height: 2,
-        borderRadius: 2,
-        background: active ? color : 'rgba(0,0,0,0.2)',
-        flexShrink: 0,
-        transition: 'width 0.2s cubic-bezier(0.16,1,0.3,1), background 0.15s ease',
-      }} />
-      <span style={{
-        fontSize: 12, fontWeight: 600, letterSpacing: '-0.015em',
-        color: active ? color : '#5A5A5A',
-        whiteSpace: 'nowrap',
-        transition: 'color 0.15s ease',
+        fontSize: 13.5, fontWeight: 700, letterSpacing: '-0.025em',
+        color: active ? '#fff' : '#3A3A3A',
+        transition: 'color 0.16s ease',
       }}>
         {label}
       </span>
       <span style={{
-        fontSize: 10.5, fontWeight: 500,
-        color: active ? color : 'rgba(0,0,0,0.2)',
-        transition: 'color 0.15s ease',
+        fontSize: 11, fontWeight: 500,
+        color: active ? 'rgba(255,255,255,0.38)' : 'rgba(0,0,0,0.22)',
+        transition: 'color 0.16s ease',
+        lineHeight: 1,
       }}>
         {count}
       </span>
@@ -339,7 +319,6 @@ export default function BrowsePage({ params }: { params: Promise<{ section: stri
             {specs.map(([spec, cnt]) => (
               <RoleChip
                 key={spec} label={spec} count={cnt}
-                color={SPEC_COLOR[spec] ?? '#777'}
                 active={selSpecs.has(spec)}
                 onClick={() => setSelSpecs(s => toggleSet(s, spec))}
               />
@@ -348,7 +327,6 @@ export default function BrowsePage({ params }: { params: Promise<{ section: stri
             {cities.map(([city, cnt]) => (
               <RoleChip
                 key={city} label={city} count={cnt}
-                color="#6B7280"
                 active={selCities.has(city)}
                 onClick={() => setSelCities(s => toggleSet(s, city))}
               />
