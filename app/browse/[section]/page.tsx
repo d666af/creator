@@ -1,110 +1,124 @@
 'use client';
 
-import { use, useState, useMemo } from 'react';
+import { use, useState, useMemo, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Check, Eye } from 'lucide-react';
+import { ArrowLeft, Eye, X } from 'lucide-react';
 import {
   SECTIONS, getBrowseItems,
   ytThumb, ytPortraitThumb,
   type BrowseItem,
 } from '@/lib/data';
 
-// ── Category metadata ──────────────────────────────────────────────────────────
-
-const CAT_META: Record<string, { emoji: string; bg: string; accent: string }> = {
-  'Fashion':    { emoji: '👗', bg: 'linear-gradient(160deg,#FDE8EF 0%,#fff 100%)', accent: '#C8506A' },
-  'Beauty':     { emoji: '💄', bg: 'linear-gradient(160deg,#EDE8FD 0%,#fff 100%)', accent: '#7850C8' },
-  'Food':       { emoji: '🍽️', bg: 'linear-gradient(160deg,#FDF4E8 0%,#fff 100%)', accent: '#C87830' },
-  'Lifestyle':  { emoji: '🌿', bg: 'linear-gradient(160deg,#E8FDF0 0%,#fff 100%)', accent: '#30A060' },
-  'Tech':       { emoji: '💻', bg: 'linear-gradient(160deg,#E8EFFE 0%,#fff 100%)', accent: '#3060C8' },
-  'E-commerce': { emoji: '🛍️', bg: 'linear-gradient(160deg,#FDE8E0 0%,#fff 100%)', accent: '#C86040' },
-  'Реклама':    { emoji: '📢', bg: 'linear-gradient(160deg,#FDFCE0 0%,#fff 100%)', accent: '#A09020' },
-  'Кино':       { emoji: '🎬', bg: 'linear-gradient(160deg,#E8E8FD 0%,#fff 100%)', accent: '#5050C8' },
-  'Музыка':     { emoji: '🎵', bg: 'linear-gradient(160deg,#FDE8F5 0%,#fff 100%)', accent: '#C83098' },
-  'Performance':{ emoji: '📊', bg: 'linear-gradient(160deg,#E0FDFD 0%,#fff 100%)', accent: '#30A0A0' },
-  'Branding':   { emoji: '✦',  bg: 'linear-gradient(160deg,#F5F5E8 0%,#fff 100%)', accent: '#808050' },
-  'Education':  { emoji: '📚', bg: 'linear-gradient(160deg,#E8F0FD 0%,#fff 100%)', accent: '#4060C8' },
-};
-const CAT_DEFAULT = { emoji: '▪', bg: '#F2F2F0', accent: '#888' };
+// ── Spec colors ────────────────────────────────────────────────────────────────
 
 const SPEC_COLOR: Record<string, string> = {
-  'Мобилограф': '#E8643C',
-  'Монтажёр':   '#3C76E8',
-  'Сценарист':  '#8C3CE8',
-  'Колорист':   '#3CB87C',
-  'Продюсер':   '#E8B43C',
-  'Таргетолог': '#3CB8C8',
+  'Мобилограф': '#D4521E',
+  'Монтажёр':   '#1E52D4',
+  'Сценарист':  '#7B1ED4',
+  'Колорист':   '#1EA86A',
+  'Продюсер':   '#C49010',
+  'Таргетолог': '#0AAAB8',
 };
 
-// ── Filter card (category) ─────────────────────────────────────────────────────
+// ── Category chip ──────────────────────────────────────────────────────────────
 
-function FilterCard({
-  emoji, label, count, bg, accent, active, onClick,
+function CatChip({
+  label, count, active, onClick,
 }: {
-  emoji: string; label: string; count: number;
-  bg: string; accent: string; active: boolean; onClick: () => void;
+  label: string; count: number; active: boolean; onClick: () => void;
 }) {
+  const [pressed, setPressed] = useState(false);
   return (
     <button
       onClick={onClick}
+      onMouseDown={() => setPressed(true)}
+      onMouseUp={() => setPressed(false)}
+      onMouseLeave={() => setPressed(false)}
       style={{
-        flexShrink: 0, width: 90, padding: '14px 8px 12px',
-        borderRadius: 20,
-        border: `2px solid ${active ? accent : 'rgba(0,0,0,0.06)'}`,
-        background: active ? bg : '#F2F2F0',
+        flexShrink: 0,
+        height: 42,
+        padding: '0 20px',
+        borderRadius: 100,
+        border: 'none',
+        background: active ? '#111' : 'rgba(0,0,0,0.065)',
         cursor: 'pointer',
-        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5,
-        transition: 'all 0.2s cubic-bezier(0.16,1,0.3,1)',
-        transform: active ? 'scale(1.05)' : 'scale(1)',
-        boxShadow: active ? `0 4px 20px ${accent}28` : 'none',
-        position: 'relative',
+        display: 'flex', alignItems: 'center', gap: 8,
+        transition: 'background 0.16s ease, transform 0.12s cubic-bezier(0.16,1,0.3,1), box-shadow 0.16s ease',
+        transform: pressed ? 'scale(0.95)' : active ? 'scale(1.02)' : 'scale(1)',
+        boxShadow: active ? '0 4px 14px rgba(0,0,0,0.18)' : 'none',
       }}
     >
-      {active && (
-        <div style={{
-          position: 'absolute', top: 7, right: 7,
-          width: 16, height: 16, borderRadius: '50%', background: accent,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-        }}>
-          <Check size={9} color="#fff" strokeWidth={2.5} />
-        </div>
-      )}
-      <span style={{ fontSize: 28, lineHeight: 1, filter: active ? 'none' : 'grayscale(20%)' }}>{emoji}</span>
       <span style={{
-        fontSize: 10.5, fontWeight: 700, color: active ? accent : '#555',
-        textAlign: 'center', lineHeight: 1.25, letterSpacing: '-0.01em',
-      }}>{label}</span>
+        fontSize: 13.5, fontWeight: 700, letterSpacing: '-0.025em',
+        color: active ? '#fff' : '#3A3A3A',
+        transition: 'color 0.16s ease',
+      }}>
+        {label}
+      </span>
       <span style={{
-        fontSize: 10, fontWeight: 500,
-        color: active ? accent : '#BBB',
-      }}>{count}</span>
+        fontSize: 11, fontWeight: 500,
+        color: active ? 'rgba(255,255,255,0.38)' : 'rgba(0,0,0,0.22)',
+        transition: 'color 0.16s ease',
+        lineHeight: 1,
+      }}>
+        {count}
+      </span>
     </button>
   );
 }
 
-// ── Pill chip (spec / city) ────────────────────────────────────────────────────
+// ── Role / city chip ───────────────────────────────────────────────────────────
 
-function PillChip({
+function RoleChip({
   label, count, color, active, onClick,
 }: {
   label: string; count: number; color: string; active: boolean; onClick: () => void;
 }) {
+  const [pressed, setPressed] = useState(false);
   return (
     <button
       onClick={onClick}
+      onMouseDown={() => setPressed(true)}
+      onMouseUp={() => setPressed(false)}
+      onMouseLeave={() => setPressed(false)}
       style={{
-        flexShrink: 0, padding: '6px 14px',
+        flexShrink: 0,
+        height: 34,
+        padding: '0 14px',
         borderRadius: 100,
-        border: `1.5px solid ${active ? color : 'rgba(0,0,0,0.08)'}`,
-        background: active ? `${color}14` : '#F2F2F0',
+        border: `1.5px solid ${active ? color : 'rgba(0,0,0,0.1)'}`,
+        background: active ? `${color}12` : 'transparent',
         cursor: 'pointer',
         display: 'flex', alignItems: 'center', gap: 6,
-        transition: 'all 0.18s ease',
+        transition: 'border-color 0.15s ease, background 0.15s ease, transform 0.12s cubic-bezier(0.16,1,0.3,1)',
+        transform: pressed ? 'scale(0.94)' : 'scale(1)',
       }}
     >
-      <span style={{ width: 6, height: 6, borderRadius: '50%', background: color, flexShrink: 0, opacity: active ? 1 : 0.4 }} />
-      <span style={{ fontSize: 11.5, fontWeight: 600, color: active ? color : '#666', whiteSpace: 'nowrap' }}>{label}</span>
-      <span style={{ fontSize: 10, color: active ? color : '#C0C0C0', fontWeight: 500 }}>{count}</span>
+      {/* Indicator bar */}
+      <span style={{
+        display: 'block',
+        width: active ? 10 : 5,
+        height: 2,
+        borderRadius: 2,
+        background: active ? color : 'rgba(0,0,0,0.2)',
+        flexShrink: 0,
+        transition: 'width 0.2s cubic-bezier(0.16,1,0.3,1), background 0.15s ease',
+      }} />
+      <span style={{
+        fontSize: 12, fontWeight: 600, letterSpacing: '-0.015em',
+        color: active ? color : '#5A5A5A',
+        whiteSpace: 'nowrap',
+        transition: 'color 0.15s ease',
+      }}>
+        {label}
+      </span>
+      <span style={{
+        fontSize: 10.5, fontWeight: 500,
+        color: active ? color : 'rgba(0,0,0,0.2)',
+        transition: 'color 0.15s ease',
+      }}>
+        {count}
+      </span>
     </button>
   );
 }
@@ -126,15 +140,17 @@ function BrowseCard({
       onMouseLeave={() => setHovered(false)}
       style={{ cursor: 'pointer' }}
     >
+      {/* Thumbnail */}
       <div style={{
         width: '100%',
         aspectRatio: isPortrait ? '9/16' : '16/9',
-        borderRadius: 14,
+        borderRadius: 12,
         overflow: 'hidden',
-        background: '#111',
-        transform: hovered ? 'scale(0.97)' : 'scale(1)',
-        transition: 'transform 0.25s cubic-bezier(0.16,1,0.3,1)',
-        marginBottom: 8,
+        background: '#1A1A1A',
+        marginBottom: 9,
+        position: 'relative',
+        transform: hovered ? 'scale(0.965)' : 'scale(1)',
+        transition: 'transform 0.28s cubic-bezier(0.16,1,0.3,1)',
       }}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
@@ -142,20 +158,52 @@ function BrowseCard({
           alt={item.title}
           style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
         />
+        {/* Bottom gradient + views */}
+        <div style={{
+          position: 'absolute', inset: 0,
+          background: 'linear-gradient(to top, rgba(0,0,0,0.55) 0%, transparent 45%)',
+          opacity: hovered ? 1 : 0.65,
+          transition: 'opacity 0.25s ease',
+        }} />
+        <div style={{
+          position: 'absolute', bottom: 8, left: 8, right: 8,
+          display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between',
+        }}>
+          <span style={{
+            fontSize: 9, fontWeight: 700, letterSpacing: '0.06em',
+            textTransform: 'uppercase',
+            color: 'rgba(255,255,255,0.6)',
+            background: 'rgba(0,0,0,0.35)',
+            padding: '2px 6px', borderRadius: 4,
+            backdropFilter: 'blur(4px)',
+          }}>
+            {item.spec}
+          </span>
+          <span style={{
+            fontSize: 10, fontWeight: 600, color: 'rgba(255,255,255,0.85)',
+            display: 'flex', alignItems: 'center', gap: 3,
+          }}>
+            <Eye size={8} color="rgba(255,255,255,0.7)" />
+            {item.views}
+          </span>
+        </div>
       </div>
+
+      {/* Info */}
       <div style={{
-        fontSize: 12.5, fontWeight: 600, color: '#111', lineHeight: 1.35,
+        fontSize: 12.5, fontWeight: 650, color: '#111', lineHeight: 1.3,
+        letterSpacing: '-0.015em',
         overflow: 'hidden', display: '-webkit-box',
         WebkitLineClamp: 2, WebkitBoxOrient: 'vertical',
         marginBottom: 4,
       } as React.CSSProperties}>
         {item.title}
       </div>
-      <div style={{ fontSize: 11, color: '#AAA', display: 'flex', alignItems: 'center', gap: 4 }}>
-        <Eye size={9} />
-        <span>{item.views}</span>
-        <span style={{ color: '#DDD' }}>·</span>
-        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.creator}</span>
+      <div style={{
+        fontSize: 11, color: '#9A9A9A', letterSpacing: '-0.01em',
+        overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+      }}>
+        {item.creator} · {item.city}
       </div>
     </div>
   );
@@ -185,7 +233,6 @@ export default function BrowsePage({ params }: { params: Promise<{ section: stri
   const isPortrait = section?.layout === 'portrait';
 
   const allItems = useMemo(() => getBrowseItems(sectionId, 24), [sectionId]);
-
   const categories = useMemo(() => toCounts(allItems.map(i => i.category)), [allItems]);
   const specs      = useMemo(() => toCounts(allItems.map(i => i.spec)),     [allItems]);
   const cities     = useMemo(() => toCounts(allItems.map(i => i.city)),     [allItems]);
@@ -193,6 +240,16 @@ export default function BrowsePage({ params }: { params: Promise<{ section: stri
   const [selCats,   setSelCats]   = useState<Set<string>>(new Set());
   const [selSpecs,  setSelSpecs]  = useState<Set<string>>(new Set());
   const [selCities, setSelCities] = useState<Set<string>>(new Set());
+
+  // Fade grid on filter change
+  const [gridOpacity, setGridOpacity] = useState(1);
+  const fadeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => {
+    setGridOpacity(0);
+    if (fadeTimer.current) clearTimeout(fadeTimer.current);
+    fadeTimer.current = setTimeout(() => setGridOpacity(1), 140);
+    return () => { if (fadeTimer.current) clearTimeout(fadeTimer.current); };
+  }, [selCats, selSpecs, selCities]);
 
   const filtered = useMemo(() => allItems.filter(item => {
     if (selCats.size   > 0 && !selCats.has(item.category)) return false;
@@ -202,85 +259,94 @@ export default function BrowsePage({ params }: { params: Promise<{ section: stri
   }), [allItems, selCats, selSpecs, selCities]);
 
   const activeCount = selCats.size + selSpecs.size + selCities.size;
+  const resetAll = () => { setSelCats(new Set()); setSelSpecs(new Set()); setSelCities(new Set()); };
 
   if (!section) return null;
 
   return (
     <div style={{ background: '#F5F5F3', minHeight: '100vh', paddingBottom: 72 }}>
 
-      {/* ── Sticky header ── */}
+      {/* ── Sticky filter bar ── */}
       <div style={{
         position: 'sticky', top: 0, zIndex: 20,
-        background: 'rgba(245,245,243,0.92)', backdropFilter: 'blur(12px)',
-        WebkitBackdropFilter: 'blur(12px)',
-        paddingBottom: 2,
+        background: 'rgba(245,245,243,0.94)',
+        backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
+        borderBottom: '1px solid rgba(0,0,0,0.05)',
       }}>
+
         {/* Title row */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px 0' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '13px 16px 0' }}>
           <button
             onClick={() => router.back()}
             style={{
-              width: 36, height: 36, borderRadius: '50%',
-              background: '#fff', border: 'none', cursor: 'pointer',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              flexShrink: 0, boxShadow: '0 1px 6px rgba(0,0,0,0.08)',
+              width: 34, height: 34, borderRadius: '50%',
+              background: 'rgba(0,0,0,0.07)', border: 'none', cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
             }}
           >
-            <ArrowLeft size={16} color="#111" />
+            <ArrowLeft size={15} color="#111" />
           </button>
-          <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 17, fontWeight: 800, color: '#111', letterSpacing: '-0.02em' }}>
+
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <span style={{ fontSize: 16, fontWeight: 800, color: '#111', letterSpacing: '-0.03em' }}>
               {section.genre}
-            </div>
-            <div style={{ fontSize: 11.5, color: '#AAA', marginTop: 1 }}>
-              {filtered.length} работ{activeCount > 0 ? <span style={{ color: '#C8506A' }}> · активны фильтры</span> : null}
-            </div>
+            </span>
+            <span style={{ fontSize: 11.5, color: '#AAA', marginLeft: 8, letterSpacing: '-0.01em' }}>
+              {filtered.length}
+            </span>
           </div>
+
           {activeCount > 0 && (
             <button
-              onClick={() => { setSelCats(new Set()); setSelSpecs(new Set()); setSelCities(new Set()); }}
+              onClick={resetAll}
               style={{
-                fontSize: 12, fontWeight: 600, color: '#C8506A',
-                background: '#FDE8EF', border: 'none', cursor: 'pointer',
-                padding: '5px 12px', borderRadius: 100,
+                display: 'flex', alignItems: 'center', gap: 4,
+                fontSize: 11.5, fontWeight: 600, color: '#555',
+                background: 'rgba(0,0,0,0.07)', border: 'none', cursor: 'pointer',
+                padding: '5px 10px 5px 8px', borderRadius: 100,
+                transition: 'background 0.15s ease',
               }}
             >
+              <X size={11} strokeWidth={2.5} />
               Сброс
             </button>
           )}
         </div>
 
-        {/* Category filter cards */}
-        <div style={{ overflowX: 'auto', scrollbarWidth: 'none', paddingTop: 14 }}>
-          <div style={{ display: 'flex', gap: 8, padding: '0 16px' }}>
-            {categories.map(([cat, cnt]) => {
-              const m = CAT_META[cat] ?? CAT_DEFAULT;
-              return (
-                <FilterCard
-                  key={cat}
-                  emoji={m.emoji} label={cat} count={cnt}
-                  bg={m.bg} accent={m.accent}
-                  active={selCats.has(cat)}
-                  onClick={() => setSelCats(s => toggleSet(s, cat))}
-                />
-              );
-            })}
+        {/* Category chips */}
+        <div style={{ overflowX: 'auto', scrollbarWidth: 'none', padding: '12px 0 0' }}>
+          <div style={{ display: 'flex', gap: 6, padding: '0 16px' }}>
+            {/* "Все" chip */}
+            <CatChip
+              label="Все"
+              count={allItems.length}
+              active={selCats.size === 0}
+              onClick={resetAll}
+            />
+            {categories.map(([cat, cnt]) => (
+              <CatChip
+                key={cat} label={cat} count={cnt}
+                active={selCats.has(cat)}
+                onClick={() => setSelCats(s => toggleSet(s, cat))}
+              />
+            ))}
           </div>
         </div>
 
-        {/* Spec + city pill chips */}
-        <div style={{ overflowX: 'auto', scrollbarWidth: 'none', padding: '10px 0 14px' }}>
-          <div style={{ display: 'flex', gap: 6, padding: '0 16px' }}>
+        {/* Role + city chips */}
+        <div style={{ overflowX: 'auto', scrollbarWidth: 'none', padding: '8px 0 12px' }}>
+          <div style={{ display: 'flex', gap: 5, padding: '0 16px' }}>
             {specs.map(([spec, cnt]) => (
-              <PillChip
+              <RoleChip
                 key={spec} label={spec} count={cnt}
-                color={SPEC_COLOR[spec] ?? '#888'}
+                color={SPEC_COLOR[spec] ?? '#777'}
                 active={selSpecs.has(spec)}
                 onClick={() => setSelSpecs(s => toggleSet(s, spec))}
               />
             ))}
+            <span style={{ width: 1, background: 'rgba(0,0,0,0.1)', margin: '6px 4px', flexShrink: 0 }} />
             {cities.map(([city, cnt]) => (
-              <PillChip
+              <RoleChip
                 key={city} label={city} count={cnt}
                 color="#6B7280"
                 active={selCities.has(city)}
@@ -292,12 +358,17 @@ export default function BrowsePage({ params }: { params: Promise<{ section: stri
       </div>
 
       {/* ── Grid ── */}
-      <div style={{
-        padding: '4px 14px 0',
-        display: 'grid',
-        gridTemplateColumns: 'repeat(2, 1fr)',
-        gap: isPortrait ? '14px 10px' : '12px',
-      }}>
+      <div
+        style={{
+          padding: '14px 14px 0',
+          display: 'grid',
+          gridTemplateColumns: 'repeat(2, 1fr)',
+          gap: isPortrait ? '18px 10px' : '14px',
+          opacity: gridOpacity,
+          transform: `translateY(${gridOpacity < 1 ? 6 : 0}px)`,
+          transition: 'opacity 0.22s ease, transform 0.22s cubic-bezier(0.16,1,0.3,1)',
+        }}
+      >
         {filtered.map(item => (
           <BrowseCard
             key={item.browseKey}
@@ -309,8 +380,15 @@ export default function BrowsePage({ params }: { params: Promise<{ section: stri
       </div>
 
       {filtered.length === 0 && (
-        <div style={{ textAlign: 'center', padding: '80px 20px', color: '#BBB', fontSize: 13 }}>
-          Ничего не найдено
+        <div style={{
+          display: 'flex', flexDirection: 'column', alignItems: 'center',
+          padding: '80px 20px', gap: 10,
+        }}>
+          <div style={{ fontSize: 32 }}>—</div>
+          <div style={{ fontSize: 14, fontWeight: 600, color: '#444', letterSpacing: '-0.02em' }}>Ничего не найдено</div>
+          <button onClick={resetAll} style={{ fontSize: 12, color: '#888', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}>
+            Сбросить фильтры
+          </button>
         </div>
       )}
     </div>
