@@ -4,7 +4,9 @@ import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Clock, X, Eye } from 'lucide-react';
 import Fuse from 'fuse.js';
-import { ALL_CASES, SECTIONS, ytThumb, type CaseItem } from '@/lib/data';
+import { ALL_CASES, SECTIONS, getCreatorProfiles, ytThumb, type CaseItem, type CreatorProfile } from '@/lib/data';
+
+const ALL_CREATORS_DATA = getCreatorProfiles();
 
 // ── Constants ──────────────────────────────────────────────────────────────────
 
@@ -147,6 +149,56 @@ function SmallResult({ item, query, onClick, delay }: { item: CaseItem; query: s
   );
 }
 
+// ── Creator result card ────────────────────────────────────────────────────────
+
+function CreatorResult({ profile, query, delay, onClick }: {
+  profile: CreatorProfile; query: string; delay: number; onClick: () => void;
+}) {
+  const [hov, setHov] = useState(false);
+  return (
+    <div
+      onClick={onClick}
+      onMouseEnter={() => setHov(true)}
+      onMouseLeave={() => setHov(false)}
+      style={{
+        cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 12,
+        background: hov ? '#1A1A1A' : '#111',
+        borderRadius: 14, padding: '13px 14px',
+        transition: 'background 0.18s ease',
+        animation: `srFadeIn 0.28s ease ${delay}ms both`,
+      }}
+    >
+      <div style={{
+        width: 44, height: 44, borderRadius: '50%', background: profile.avatarColor,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        fontSize: 13, fontWeight: 800, color: '#fff', flexShrink: 0,
+        boxShadow: `0 3px 10px ${profile.avatarColor}55`,
+      }}>
+        {profile.initials}
+      </div>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 5 }}>
+          <span style={{ fontSize: 14, fontWeight: 700, color: '#fff', letterSpacing: '-0.02em' }}>
+            <Highlight text={profile.name} query={query} />
+          </span>
+          {profile.isPro && (
+            <span style={{ fontSize: 7.5, fontWeight: 800, letterSpacing: '0.07em', textTransform: 'uppercase', color: '#111', background: '#fff', borderRadius: 100, padding: '2px 6px' }}>
+              PRO
+            </span>
+          )}
+        </div>
+        <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.38)', display: 'flex', alignItems: 'center', gap: 5, flexWrap: 'wrap' }}>
+          <Highlight text={profile.spec} query={query} />
+          <span style={{ color: 'rgba(255,255,255,0.18)' }}>·</span>
+          <Highlight text={profile.city} query={query} />
+          <span style={{ color: 'rgba(255,255,255,0.18)' }}>·</span>
+          <span>{profile.totalViews}K просмотров</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── SearchOverlay ──────────────────────────────────────────────────────────────
 
 export function SearchOverlay({ onClose }: { onClose: () => void }) {
@@ -205,6 +257,21 @@ export function SearchOverlay({ onClose }: { onClose: () => void }) {
     ],
     threshold: 0.38,
   }), []);
+
+  const creatorFuse = useMemo(() => new Fuse(ALL_CREATORS_DATA, {
+    keys: [
+      { name: 'name', weight: 0.55 },
+      { name: 'spec', weight: 0.30 },
+      { name: 'city', weight: 0.15 },
+    ],
+    threshold: 0.38,
+  }), []);
+
+  const creatorResults = useMemo(() => {
+    const q = query.trim();
+    if (!q) return [];
+    return creatorFuse.search(q).map(r => r.item);
+  }, [query, creatorFuse]);
 
   // Section case ID sets for fast filtering
   const sectionCaseIds = useMemo(() => {
@@ -353,14 +420,12 @@ export function SearchOverlay({ onClose }: { onClose: () => void }) {
             </div>
           )}
 
-          {/* Results */}
+          {/* ── Case results ── */}
           {hasActivity && results.length > 0 && (
             <div>
-              {query.trim() && (
-                <div style={{ fontSize: 11, fontWeight: 600, color: '#AAA', letterSpacing: '-0.01em', marginBottom: 14 }}>
-                  {results.length}&nbsp;{results.length === 1 ? 'результат' : results.length < 5 ? 'результата' : 'результатов'}
-                </div>
-              )}
+              <div style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase', color: '#AAA', marginBottom: 12 }}>
+                Работы&nbsp;&nbsp;<span style={{ color: '#CCC', fontWeight: 500 }}>{results.length}</span>
+              </div>
               <HeroResult item={heroResult} query={query} onClick={() => openCase(heroResult)} />
               {restResults.length > 0 && (
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: '14px 10px', marginTop: 6 }}>
@@ -372,8 +437,31 @@ export function SearchOverlay({ onClose }: { onClose: () => void }) {
             </div>
           )}
 
-          {/* No results */}
-          {hasActivity && results.length === 0 && (
+          {/* ── Creator results ── */}
+          {creatorResults.length > 0 && query.trim() && (
+            <div style={{ marginTop: results.length > 0 ? 28 : 0 }}>
+              {results.length > 0 && (
+                <div style={{ height: 1, background: 'rgba(0,0,0,0.07)', marginBottom: 20 }} />
+              )}
+              <div style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase', color: '#AAA', marginBottom: 10 }}>
+                Авторы&nbsp;&nbsp;<span style={{ color: '#CCC', fontWeight: 500 }}>{creatorResults.length}</span>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
+                {creatorResults.map((profile, i) => (
+                  <CreatorResult
+                    key={profile.name}
+                    profile={profile}
+                    query={query}
+                    delay={i * 28}
+                    onClick={() => { handleClose(); setTimeout(() => router.push('/creators'), 60); }}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* ── No results ── */}
+          {hasActivity && results.length === 0 && creatorResults.length === 0 && (
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '72px 20px 0', gap: 8, animation: 'srFadeIn 0.28s ease both' }}>
               <div style={{ fontSize: 32, fontWeight: 900, color: '#DDD', letterSpacing: '-0.04em' }}>—</div>
               <div style={{ fontSize: 14, fontWeight: 700, color: '#555', letterSpacing: '-0.02em' }}>Ничего не найдено</div>

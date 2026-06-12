@@ -6,17 +6,6 @@ import { getCreatorProfiles, ytThumb, type CreatorProfile, type CaseItem } from 
 import { BottomNav } from '@/app/components/BottomNav';
 import { SearchOverlay } from '@/app/components/SearchOverlay';
 
-// ── Spec colors ────────────────────────────────────────────────────────────────
-
-const SPEC_COLOR: Record<string, string> = {
-  'Мобилограф': '#FF6B3D',
-  'Монтажёр':   '#4D8EFF',
-  'Сценарист':  '#A855F7',
-  'Колорист':   '#22C97A',
-  'Продюсер':   '#F5A623',
-  'Таргетолог': '#0DD8E8',
-};
-
 // ── Data ──────────────────────────────────────────────────────────────────────
 
 const CREATORS = getCreatorProfiles()
@@ -58,11 +47,10 @@ function useInView(threshold = 0.08) {
 // ── Spec badge ─────────────────────────────────────────────────────────────────
 
 function SpecBadge({ spec }: { spec: string }) {
-  const color = SPEC_COLOR[spec] ?? '#888';
   return (
     <span style={{
       fontSize: 9, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase',
-      color: '#fff', background: color,
+      color: 'rgba(255,255,255,0.5)', background: 'rgba(255,255,255,0.1)',
       borderRadius: 6, padding: '3px 8px',
       whiteSpace: 'nowrap',
     }}>
@@ -117,16 +105,16 @@ function CreatorCard({ creator, index }: { creator: CreatorProfile; index: numbe
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 17, position: 'relative' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 13 }}>
           <div style={{
-            width: 54, height: 54, borderRadius: '50%', background: creator.avatarColor,
+            width: 58, height: 58, borderRadius: '50%', background: creator.avatarColor,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 15, fontWeight: 800, color: '#fff', flexShrink: 0,
+            fontSize: 17, fontWeight: 800, color: '#fff', flexShrink: 0,
             boxShadow: `0 4px 16px ${creator.avatarColor}55`,
           }}>
             {creator.initials}
           </div>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 7 }}>
-              <span style={{ fontSize: 16, fontWeight: 800, color: '#fff', letterSpacing: '-0.03em' }}>
+              <span style={{ fontSize: 17, fontWeight: 800, color: '#fff', letterSpacing: '-0.03em' }}>
                 {creator.name}
               </span>
               {creator.isPro && (
@@ -141,7 +129,7 @@ function CreatorCard({ creator, index }: { creator: CreatorProfile; index: numbe
 
         {/* Views counter */}
         <div style={{ textAlign: 'right', flexShrink: 0 }}>
-          <div style={{ fontSize: 28, fontWeight: 900, color: '#fff', letterSpacing: '-0.04em', lineHeight: 1 }}>
+          <div style={{ fontSize: 32, fontWeight: 900, color: '#fff', letterSpacing: '-0.04em', lineHeight: 1 }}>
             {views}K
           </div>
           <div style={{ fontSize: 9.5, color: 'rgba(255,255,255,0.3)', fontWeight: 500, marginTop: 2 }}>
@@ -222,9 +210,8 @@ export default function CreatorsPage() {
           </header>
 
           {/* ── Title ── */}
-          <div style={{ padding: '18px 16px 14px' }}>
+          <div style={{ padding: '6px 16px 14px' }}>
             <span style={{ fontSize: 28, fontWeight: 900, color: '#111', letterSpacing: '-0.04em' }}>Авторы</span>
-            <span style={{ fontSize: 13, color: '#AAA', marginLeft: 10, letterSpacing: '-0.01em' }}>{CREATORS.length}</span>
           </div>
 
           {/* ── Cards ── */}
