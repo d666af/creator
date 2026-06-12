@@ -120,7 +120,7 @@ const NAV = [
 
 function BottomNav({ active, onChange }: { active: string; onChange: (s: string) => void }) {
   return (
-    <nav style={{ position: 'fixed', bottom: 14, left: 12, right: 12, zIndex: 60, background: 'rgba(14,14,14,0.9)', backdropFilter: 'blur(28px)', WebkitBackdropFilter: 'blur(28px)', borderRadius: 28, padding: '6px 6px', display: 'flex', boxShadow: '0 12px 48px rgba(0,0,0,0.4), inset 0 0.5px 0 rgba(255,255,255,0.07)' }}>
+    <nav style={{ position: 'fixed', bottom: 14, left: 12, right: 12, zIndex: 100, background: 'rgba(14,14,14,0.9)', backdropFilter: 'blur(28px)', WebkitBackdropFilter: 'blur(28px)', borderRadius: 28, padding: '6px 6px', display: 'flex', boxShadow: '0 12px 48px rgba(0,0,0,0.4), inset 0 0.5px 0 rgba(255,255,255,0.07)' }}>
       {NAV.map(({ id, label, Icon }) => {
         const on = active === id;
         return (
