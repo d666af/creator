@@ -221,75 +221,74 @@ export default function CreatorsPage() {
   return (
     <div style={{ background: '#F5F5F3', minHeight: '100vh', paddingBottom: 100, paddingTop: headerH }}>
 
-      {/* ── Fixed search + filters ── */}
+      {/* ── Fixed app bar (title + bell + avatar) ── */}
       <div ref={headerRef} style={{
         position: 'fixed', top: 0, left: 0, right: 0, zIndex: 20,
         background: 'rgba(245,245,243,0.94)',
         backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
         borderBottom: '1px solid rgba(0,0,0,0.05)',
       }}>
-        {/* Search input */}
-        <div style={{ padding: '12px 16px 10px' }}>
-          <div style={{ position: 'relative', height: 46 }}>
-            <Search size={15} color="rgba(0,0,0,0.3)" style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
-            <input
-              ref={inputRef}
-              value={query}
-              onChange={e => setQuery(e.target.value)}
-              placeholder=""
-              style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', padding: '0 40px 0 38px', fontSize: 14, fontWeight: 600, letterSpacing: '-0.02em', color: '#111', background: 'rgba(0,0,0,0.065)', border: 'none', borderRadius: 14, outline: 'none', caretColor: '#111' }}
-            />
-            {/* Animated placeholder */}
-            {!query && (
-              <div style={{ position: 'absolute', left: 38, right: 40, top: 0, bottom: 0, display: 'flex', alignItems: 'center', pointerEvents: 'none', overflow: 'hidden' }}>
-                <style>{`@keyframes crPHIn { from { opacity:0; transform:translateY(5px) } to { opacity:1; transform:translateY(0) } }`}</style>
-                <span key={placeholderIdx} style={{ fontSize: 14, fontWeight: 600, letterSpacing: '-0.02em', color: 'rgba(0,0,0,0.25)', whiteSpace: 'nowrap', animation: 'crPHIn 0.3s ease forwards' }}>
-                  {PLACEHOLDERS[placeholderIdx]}
-                </span>
-              </div>
-            )}
-            {query && (
-              <button onClick={() => { setQuery(''); inputRef.current?.focus(); }} style={{ position: 'absolute', right: 9, top: '50%', transform: 'translateY(-50%)', width: 24, height: 24, borderRadius: '50%', background: 'rgba(0,0,0,0.12)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <X size={11} color="#555" strokeWidth={2.5} />
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px 14px' }}>
+          <span style={{ fontSize: 22, fontWeight: 900, color: '#111', letterSpacing: '-0.04em' }}>Авторы</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            {(activeCount > 0 || query) && (
+              <button onClick={resetAll} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11.5, fontWeight: 600, color: '#555', background: 'rgba(0,0,0,0.07)', border: 'none', cursor: 'pointer', padding: '5px 10px 5px 8px', borderRadius: 100 }}>
+                <X size={11} strokeWidth={2.5} /> Сброс
               </button>
             )}
-          </div>
-        </div>
-
-        {/* Spec chips */}
-        <div style={{ overflowX: 'auto', scrollbarWidth: 'none' }}>
-          <div style={{ display: 'flex', gap: 6, padding: '0 16px' }}>
-            <FilterChip label="Все" active={!selSpec && !selCity} onClick={() => { setSelSpec(null); setSelCity(null); }} />
-            {ALL_SPECS.map(spec => (
-              <FilterChip key={spec} label={spec} active={selSpec === spec} onClick={() => setSelSpec(v => v === spec ? null : spec)} />
-            ))}
-          </div>
-        </div>
-
-        {/* City chips */}
-        <div style={{ overflowX: 'auto', scrollbarWidth: 'none', padding: '7px 0 12px' }}>
-          <div style={{ display: 'flex', gap: 5, padding: '0 16px' }}>
-            {ALL_CITIES.map(city => (
-              <FilterChip key={city} label={city} active={selCity === city} onClick={() => setSelCity(v => v === city ? null : city)} />
-            ))}
+            <button style={{ width: 36, height: 36, borderRadius: '50%', border: 'none', background: 'rgba(0,0,0,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', position: 'relative' }}>
+              <Bell size={16} color="#444" />
+              <div style={{ position: 'absolute', top: 8, right: 8, width: 6, height: 6, borderRadius: '50%', background: '#0D0D0D', border: '1.5px solid #F5F5F3' }} />
+            </button>
+            <div style={{ width: 36, height: 36, borderRadius: '50%', background: '#3A4A5C', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: '#fff', cursor: 'pointer' }}>AK</div>
           </div>
         </div>
       </div>
 
-      {/* ── Scrollable header (title + actions) ── */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px 10px' }}>
-        <span style={{ fontSize: 22, fontWeight: 900, color: '#111', letterSpacing: '-0.04em' }}>Авторы</span>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          {(activeCount > 0 || query) && (
-            <button onClick={resetAll} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11.5, fontWeight: 600, color: '#555', background: 'rgba(0,0,0,0.07)', border: 'none', cursor: 'pointer', padding: '5px 10px 5px 8px', borderRadius: 100 }}>
-              <X size={11} strokeWidth={2.5} /> Сброс
+      {/* ── Scrollable: search + filters + cards ── */}
+      {/* Search input */}
+      <div style={{ padding: '12px 16px 10px' }}>
+        <div style={{ position: 'relative', height: 46 }}>
+          <Search size={15} color="rgba(0,0,0,0.3)" style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
+          <input
+            ref={inputRef}
+            value={query}
+            onChange={e => setQuery(e.target.value)}
+            placeholder=""
+            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', padding: '0 40px 0 38px', fontSize: 14, fontWeight: 600, letterSpacing: '-0.02em', color: '#111', background: 'rgba(0,0,0,0.065)', border: 'none', borderRadius: 14, outline: 'none', caretColor: '#111' }}
+          />
+          {!query && (
+            <div style={{ position: 'absolute', left: 38, right: 40, top: 0, bottom: 0, display: 'flex', alignItems: 'center', pointerEvents: 'none', overflow: 'hidden' }}>
+              <style>{`@keyframes crPHIn { from { opacity:0; transform:translateY(5px) } to { opacity:1; transform:translateY(0) } }`}</style>
+              <span key={placeholderIdx} style={{ fontSize: 14, fontWeight: 600, letterSpacing: '-0.02em', color: 'rgba(0,0,0,0.25)', whiteSpace: 'nowrap', animation: 'crPHIn 0.3s ease forwards' }}>
+                {PLACEHOLDERS[placeholderIdx]}
+              </span>
+            </div>
+          )}
+          {query && (
+            <button onClick={() => { setQuery(''); inputRef.current?.focus(); }} style={{ position: 'absolute', right: 9, top: '50%', transform: 'translateY(-50%)', width: 24, height: 24, borderRadius: '50%', background: 'rgba(0,0,0,0.12)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <X size={11} color="#555" strokeWidth={2.5} />
             </button>
           )}
-          <button style={{ width: 36, height: 36, borderRadius: '50%', border: 'none', background: 'rgba(0,0,0,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', position: 'relative' }}>
-            <Bell size={16} color="#444" />
-            <div style={{ position: 'absolute', top: 8, right: 8, width: 6, height: 6, borderRadius: '50%', background: '#0D0D0D', border: '1.5px solid #F5F5F3' }} />
-          </button>
-          <div style={{ width: 36, height: 36, borderRadius: '50%', background: '#3A4A5C', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: '#fff', cursor: 'pointer' }}>AK</div>
+        </div>
+      </div>
+
+      {/* Spec chips */}
+      <div style={{ overflowX: 'auto', scrollbarWidth: 'none' }}>
+        <div style={{ display: 'flex', gap: 6, padding: '0 16px' }}>
+          <FilterChip label="Все" active={!selSpec && !selCity} onClick={() => { setSelSpec(null); setSelCity(null); }} />
+          {ALL_SPECS.map(spec => (
+            <FilterChip key={spec} label={spec} active={selSpec === spec} onClick={() => setSelSpec(v => v === spec ? null : spec)} />
+          ))}
+        </div>
+      </div>
+
+      {/* City chips */}
+      <div style={{ overflowX: 'auto', scrollbarWidth: 'none', padding: '7px 0 12px' }}>
+        <div style={{ display: 'flex', gap: 5, padding: '0 16px' }}>
+          {ALL_CITIES.map(city => (
+            <FilterChip key={city} label={city} active={selCity === city} onClick={() => setSelCity(v => v === city ? null : city)} />
+          ))}
         </div>
       </div>
 
