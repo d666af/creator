@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Play, Eye, X, Search, Bell, Home, Users, Briefcase, User, ChevronRight, Star } from 'lucide-react';
+import { Play, Eye, X, Search, Bell, Home, Users, Briefcase, User, Star } from 'lucide-react';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -27,12 +27,12 @@ type Section = {
   id: string;
   num: string;
   genre: string;
-  layout: 'portrait' | 'landscape';
+  layout: 'portrait' | 'landscape' | 'bento';
   dark?: boolean;
   cases: CaseItem[];
 };
 
-// ─── Data — нейтральные, глубокие цвета аватаров ─────────────────────────────
+// ─── Data ────────────────────────────────────────────────────────────────────
 
 const SECTIONS: Section[] = [
   {
@@ -50,7 +50,7 @@ const SECTIONS: Section[] = [
     cases: [
       { id: 'y1', title: 'Рекламный промо — рекорд канала', creator: 'Jasur Yusupov', initials: 'JY', avatarColor: '#4A3A5C', spec: 'Монтажёр', views: '320K', viewsNum: 320, seed: 'video-studio-production', isPro: true, duration: '1:45', task: 'Бренд рекламавий ролик', result: 'Рекорд канала 320K', city: 'Ташкент', rating: 4.9 },
       { id: 'y2', title: 'Tech обзор ноутбука — 12 мин', creator: 'Jasur Yusupov', initials: 'JY', avatarColor: '#4A3A5C', spec: 'Монтажёр', views: '180K', viewsNum: 180, seed: 'laptop-desk-technology', isPro: true, duration: '12:30', task: 'Tech обзор монтажи', result: '180K просмотров', city: 'Ташкент', rating: 4.9 },
-      { id: 'y3', title: 'Сценарий YouTube — разбор кейса', creator: 'Azizbek Karimov', initials: 'AK', avatarColor: '#3A4A5C', spec: 'Сценарист', views: '120K', viewsNum: 120, seed: 'typewriter-writing-script', isPro: false, duration: '8:15', task: 'Обзор сценарийи', result: '120K просмотров', city: 'Ташкент', rating: 5.0 },
+      { id: 'y3', title: 'Сценарий YouTube — разбор', creator: 'Azizbek Karimov', initials: 'AK', avatarColor: '#3A4A5C', spec: 'Сценарист', views: '120K', viewsNum: 120, seed: 'typewriter-writing-script', isPro: false, duration: '8:15', task: 'Обзор сценарийи', result: '120K просмотров', city: 'Ташкент', rating: 5.0 },
       { id: 'y4', title: 'E-commerce продакшн', creator: 'Doniyor Toshmatov', initials: 'DT', avatarColor: '#5C4A3A', spec: 'Продюсер', views: '45K', viewsNum: 45, seed: 'product-photography-studio', isPro: false, duration: '2:40', task: 'Предметли съёмка', result: 'Конверсия +25%', city: 'Бухара', rating: 4.6 },
     ],
   },
@@ -63,17 +63,30 @@ const SECTIONS: Section[] = [
     ],
   },
   {
-    id: 'campaigns', num: '04', genre: 'Кампейны', layout: 'portrait',
+    id: 'campaigns', num: '04', genre: 'Кампейны', layout: 'bento',
     cases: [
       { id: 'c1', title: 'Таргет ROAS x4.2 за 2 месяца', creator: 'Shahlo Mirzayeva', initials: 'SM', avatarColor: '#5C3A4A', spec: 'Таргетолог', views: '32K', viewsNum: 32, seed: 'analytics-dashboard-growth', isPro: true, duration: null, task: 'Магазин таргет', result: 'ROAS 4.2', city: 'Ташкент', rating: 4.7 },
       { id: 'c2', title: 'Бренд-видео для имиджа', creator: 'Doniyor Toshmatov', initials: 'DT', avatarColor: '#5C4A3A', spec: 'Продюсер', views: '67K', viewsNum: 67, seed: 'brand-identity-logo', isPro: false, duration: '1:30', task: 'Имидж видео', result: '67K просмотров', city: 'Бухара', rating: 4.6 },
       { id: 'c3', title: 'Лайфстайл серия — 5 роликов', creator: 'Feruza Nazarova', initials: 'FN', avatarColor: '#3A5C48', spec: 'Мобилограф', views: '110K', viewsNum: 110, seed: 'lifestyle-urban-portrait', isPro: true, duration: '0:45', task: 'Лайфстайл серия', result: '110K просмотров', city: 'Ташкент', rating: 4.9 },
-      { id: 'c4', title: 'SMM beauty — +5K за 2 месяца', creator: 'Shahlo Mirzayeva', initials: 'SM', avatarColor: '#5C3A4A', spec: 'SMM', views: '18K', viewsNum: 18, seed: 'social-influencer-phone', isPro: true, duration: null, task: 'Beauty аккаунт', result: '+5000 подписчиков', city: 'Ташкент', rating: 4.7 },
     ],
   },
 ];
 
-const HERO = SECTIONS[0].cases[1];
+const HERO_ITEMS = [
+  SECTIONS[0].cases[1], // 540K Viral Shorts
+  SECTIONS[1].cases[0], // 320K Promo
+  SECTIONS[2].cases[0], // 210K Clip
+];
+
+const TICKER_ITEMS = [
+  '540K просмотров за 3 дня',
+  '12 новых кейсов сегодня',
+  'Хакатон завершается через 3 дня',
+  '8 авторов онлайн прямо сейчас',
+  'Fashion кейс набрал 142K за 24ч',
+  'Новый автор из Бухары',
+  'ROAS x4.2 — кейс недели',
+];
 
 // ─── Hooks ────────────────────────────────────────────────────────────────────
 
@@ -86,16 +99,14 @@ function use3DTilt(intensity = 10) {
     const el = ref.current;
     if (!el) return;
     const rect = el.getBoundingClientRect();
-    const nx = (e.clientX - rect.left) / rect.width;
-    const ny = (e.clientY - rect.top) / rect.height;
-    setTilt({ x: (ny - 0.5) * -intensity, y: (nx - 0.5) * intensity });
+    setTilt({
+      x: ((e.clientY - rect.top) / rect.height - 0.5) * -intensity,
+      y: ((e.clientX - rect.left) / rect.width - 0.5) * intensity,
+    });
     setActive(true);
   }, [intensity]);
 
-  const onMouseLeave = useCallback(() => {
-    setTilt({ x: 0, y: 0 });
-    setActive(false);
-  }, []);
+  const onMouseLeave = useCallback(() => { setTilt({ x: 0, y: 0 }); setActive(false); }, []);
 
   return { ref, tilt, active, onMouseMove, onMouseLeave };
 }
@@ -107,7 +118,7 @@ function useScrollReveal(threshold = 0.1) {
     const el = ref.current;
     if (!el) return;
     const obs = new IntersectionObserver(
-      ([entry]) => { if (entry.isIntersecting) { setVisible(true); obs.disconnect(); } },
+      ([e]) => { if (e.isIntersecting) { setVisible(true); obs.disconnect(); } },
       { threshold }
     );
     obs.observe(el);
@@ -150,17 +161,16 @@ function BottomNav({ active, onChange }: { active: string; onChange: (s: string)
       boxShadow: '0 12px 48px rgba(0,0,0,0.4), inset 0 0.5px 0 rgba(255,255,255,0.07)',
     }}>
       {NAV.map(({ id, label, Icon }) => {
-        const isActive = active === id;
+        const on = active === id;
         return (
           <button key={id} onClick={() => onChange(id)} style={{
             flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
-            border: 'none',
-            background: isActive ? 'rgba(255,255,255,0.08)' : 'transparent',
+            border: 'none', background: on ? 'rgba(255,255,255,0.08)' : 'transparent',
             borderRadius: 22, padding: '8px 0', cursor: 'pointer',
             transition: 'background 0.2s ease',
           }}>
-            <Icon size={21} color={isActive ? '#fff' : 'rgba(255,255,255,0.3)'} strokeWidth={isActive ? 2 : 1.5} />
-            <span style={{ fontSize: 9.5, fontWeight: isActive ? 600 : 400, color: isActive ? '#fff' : 'rgba(255,255,255,0.3)', letterSpacing: '0.01em' }}>
+            <Icon size={21} color={on ? '#fff' : 'rgba(255,255,255,0.3)'} strokeWidth={on ? 2 : 1.5} />
+            <span style={{ fontSize: 9.5, fontWeight: on ? 600 : 400, color: on ? '#fff' : 'rgba(255,255,255,0.3)' }}>
               {label}
             </span>
           </button>
@@ -170,36 +180,53 @@ function BottomNav({ active, onChange }: { active: string; onChange: (s: string)
   );
 }
 
-// ─── Hero Card ────────────────────────────────────────────────────────────────
+// ─── Ticker ───────────────────────────────────────────────────────────────────
 
-function HeroCard({ item, onClick }: { item: CaseItem; onClick: (c: CaseItem) => void }) {
-  const { ref, visible } = useScrollReveal(0.01);
-  const count = useCountUp(item.viewsNum, visible);
+function Ticker() {
+  const doubled = [...TICKER_ITEMS, ...TICKER_ITEMS];
+  return (
+    <div style={{ overflow: 'hidden', height: 34, background: '#0D0D0D', display: 'flex', alignItems: 'center' }}>
+      <div style={{ display: 'flex', animation: 'ticker 24s linear infinite', willChange: 'transform' }}>
+        {doubled.map((item, i) => (
+          <span key={i} style={{
+            whiteSpace: 'nowrap', padding: '0 32px',
+            fontSize: 10.5, color: 'rgba(255,255,255,0.32)',
+            fontWeight: 500, letterSpacing: '0.04em', textTransform: 'uppercase',
+          }}>
+            {item}
+            <span style={{ marginLeft: 32, color: 'rgba(255,255,255,0.1)' }}>—</span>
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── Hero Slide (keyed, animates on mount) ────────────────────────────────────
+
+function HeroSlide({ item, onClick }: { item: CaseItem; onClick: (c: CaseItem) => void }) {
+  const count = useCountUp(item.viewsNum, true);
 
   return (
     <div
-      ref={ref}
       onClick={() => onClick(item)}
       style={{
-        margin: '0 14px', borderRadius: 22, overflow: 'hidden',
-        cursor: 'pointer', position: 'relative', aspectRatio: '16/9',
+        position: 'relative', width: '100%', aspectRatio: '16/9',
+        cursor: 'pointer',
         backgroundImage: `
-          linear-gradient(170deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.92) 100%),
+          linear-gradient(170deg, rgba(0,0,0,0.04) 0%, rgba(0,0,0,0.9) 100%),
           url(https://picsum.photos/seed/${item.seed}/900/506)
         `,
         backgroundSize: 'cover', backgroundPosition: 'center',
-        opacity: visible ? 1 : 0,
-        transform: visible ? 'translateY(0)' : 'translateY(24px)',
-        transition: 'opacity 0.7s ease, transform 0.7s cubic-bezier(0.16,1,0.3,1)',
-        boxShadow: '0 24px 64px rgba(0,0,0,0.28)',
+        animation: 'heroFade 0.45s cubic-bezier(0.16,1,0.3,1) forwards',
       }}
     >
-      {/* Duration — top right, minimal */}
+      {/* Duration */}
       {item.duration && (
         <div style={{
           position: 'absolute', top: 16, right: 16,
-          color: 'rgba(255,255,255,0.65)', fontSize: 11, fontWeight: 500,
-          letterSpacing: '0.02em', fontVariantNumeric: 'tabular-nums',
+          color: 'rgba(255,255,255,0.55)', fontSize: 11, fontWeight: 500,
+          letterSpacing: '0.02em',
         }}>
           {item.duration}
         </div>
@@ -211,64 +238,124 @@ function HeroCard({ item, onClick }: { item: CaseItem; onClick: (c: CaseItem) =>
         display: 'flex', alignItems: 'center', justifyContent: 'center',
       }}>
         <div style={{
-          width: 60, height: 60, borderRadius: '50%',
+          width: 56, height: 56, borderRadius: '50%',
           background: 'rgba(255,255,255,0.12)',
           backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
-          border: '1px solid rgba(255,255,255,0.2)',
+          border: '1px solid rgba(255,255,255,0.18)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
         }}>
-          <Play size={22} fill="#fff" stroke="none" style={{ marginLeft: 3 }} />
+          <Play size={20} fill="#fff" stroke="none" style={{ marginLeft: 3 }} />
         </div>
       </div>
 
-      {/* Bottom info */}
-      <div style={{
-        position: 'absolute', bottom: 0, left: 0, right: 0,
-        padding: '0 22px 22px',
-      }}>
+      {/* Bottom */}
+      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '0 22px 22px' }}>
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 10 }}>
-          <span style={{ fontSize: 52, fontWeight: 900, color: '#fff', letterSpacing: '-0.04em', lineHeight: 1 }}>
+          <span style={{ fontSize: 50, fontWeight: 900, color: '#fff', letterSpacing: '-0.04em', lineHeight: 1 }}>
             {count}K
           </span>
-          <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)', fontWeight: 400, paddingBottom: 4 }}>
+          <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.38)', fontWeight: 400, paddingBottom: 4 }}>
             просмотров
           </span>
         </div>
-        <div style={{ fontSize: 17, fontWeight: 700, color: '#fff', lineHeight: 1.3, marginBottom: 12 }}>
+        <div style={{ fontSize: 16, fontWeight: 700, color: '#fff', lineHeight: 1.3, marginBottom: 12 }}>
           {item.title}
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <div style={{
-            width: 28, height: 28, borderRadius: '50%',
-            background: item.avatarColor,
+            width: 26, height: 26, borderRadius: '50%', background: item.avatarColor,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 9, fontWeight: 700, color: '#fff', flexShrink: 0,
+            fontSize: 8, fontWeight: 700, color: '#fff', flexShrink: 0,
           }}>
             {item.initials}
           </div>
           <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.7)', fontWeight: 500 }}>
             {item.creator}
           </span>
-          <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)', fontWeight: 400 }}>
-            {item.spec}
-          </span>
+          <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)' }}>{item.spec}</span>
         </div>
       </div>
     </div>
   );
 }
 
-// ─── Portrait Card (9:16) ─────────────────────────────────────────────────────
+// ─── Hero Carousel ────────────────────────────────────────────────────────────
 
-function PortraitCard({ item, onClick }: { item: CaseItem; onClick: (c: CaseItem) => void }) {
-  const { ref, tilt, active, onMouseMove, onMouseLeave } = use3DTilt(12);
+function HeroCarousel({ items, onCaseClick }: { items: CaseItem[]; onCaseClick: (c: CaseItem) => void }) {
+  const { ref, visible } = useScrollReveal(0.01);
+  const [index, setIndex] = useState(0);
+  const [paused, setPaused] = useState(false);
+  const touchX = useRef(0);
+
+  useEffect(() => {
+    if (paused) return;
+    const t = setInterval(() => setIndex((i) => (i + 1) % items.length), 5000);
+    return () => clearInterval(t);
+  }, [paused, items.length]);
+
+  const go = (dir: 1 | -1) => setIndex((i) => (i + dir + items.length) % items.length);
 
   return (
     <div
       ref={ref}
-      onClick={() => onClick(item)}
-      onMouseMove={onMouseMove}
-      onMouseLeave={onMouseLeave}
+      style={{
+        margin: '0 14px',
+        opacity: visible ? 1 : 0,
+        transform: visible ? 'translateY(0)' : 'translateY(24px)',
+        transition: 'opacity 0.7s ease, transform 0.7s cubic-bezier(0.16,1,0.3,1)',
+      }}
+    >
+      {/* Card */}
+      <div
+        style={{
+          borderRadius: 22, overflow: 'hidden',
+          boxShadow: '0 24px 64px rgba(0,0,0,0.26)',
+          position: 'relative',
+        }}
+        onMouseEnter={() => setPaused(true)}
+        onMouseLeave={() => setPaused(false)}
+        onTouchStart={(e) => { touchX.current = e.targetTouches[0].clientX; setPaused(true); }}
+        onTouchEnd={(e) => {
+          const diff = touchX.current - e.changedTouches[0].clientX;
+          if (diff > 40) go(1);
+          else if (diff < -40) go(-1);
+          setPaused(false);
+        }}
+      >
+        <HeroSlide key={items[index].id} item={items[index]} onClick={onCaseClick} />
+      </div>
+
+      {/* Dot indicators */}
+      <div style={{
+        display: 'flex', justifyContent: 'center', alignItems: 'center',
+        gap: 6, marginTop: 14,
+      }}>
+        {items.map((_, i) => (
+          <button
+            key={i}
+            onClick={() => setIndex(i)}
+            style={{
+              width: i === index ? 22 : 6,
+              height: 6, borderRadius: 3, border: 'none',
+              background: i === index ? '#0D0D0D' : '#D8D8D4',
+              cursor: 'pointer', padding: 0,
+              transition: 'width 0.35s cubic-bezier(0.16,1,0.3,1), background 0.25s ease',
+            }}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── Portrait Card ────────────────────────────────────────────────────────────
+
+function PortraitCard({ item, onClick }: { item: CaseItem; onClick: (c: CaseItem) => void }) {
+  const { ref, tilt, active, onMouseMove, onMouseLeave } = use3DTilt(12);
+  return (
+    <div
+      ref={ref} onClick={() => onClick(item)}
+      onMouseMove={onMouseMove} onMouseLeave={onMouseLeave}
       style={{
         flexShrink: 0, width: 155, height: 276, borderRadius: 18,
         overflow: 'hidden', cursor: 'pointer', position: 'relative',
@@ -278,46 +365,31 @@ function PortraitCard({ item, onClick }: { item: CaseItem; onClick: (c: CaseItem
         `,
         backgroundSize: 'cover', backgroundPosition: 'center',
         transform: `perspective(800px) rotateX(${tilt.x}deg) rotateY(${tilt.y}deg) scale(${active ? 1.03 : 1})`,
-        transition: active
-          ? 'transform 0.1s ease, box-shadow 0.15s ease'
-          : 'transform 0.55s cubic-bezier(0.23,1,0.32,1), box-shadow 0.4s ease',
+        transition: active ? 'transform 0.08s ease, box-shadow 0.15s ease' : 'transform 0.55s cubic-bezier(0.23,1,0.32,1), box-shadow 0.4s ease',
         boxShadow: active ? '0 24px 48px rgba(0,0,0,0.38)' : '0 6px 20px rgba(0,0,0,0.18)',
         willChange: 'transform',
       }}
     >
-      {/* Specular light on tilt */}
       <div style={{
-        position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 1,
-        background: `radial-gradient(circle at ${50 + tilt.y * 2.5}% ${50 - tilt.x * 2.5}%, rgba(255,255,255,0.08) 0%, transparent 65%)`,
-        transition: 'background 0.1s ease',
+        position: 'absolute', inset: 0, pointerEvents: 'none',
+        background: `radial-gradient(circle at ${50 + tilt.y * 2.5}% ${50 - tilt.x * 2.5}%, rgba(255,255,255,0.07) 0%, transparent 65%)`,
+        transition: 'background 0.08s ease',
       }} />
-
-      {/* Duration — minimal text only */}
       {item.duration && (
-        <div style={{
-          position: 'absolute', top: 12, right: 12, zIndex: 2,
-          color: 'rgba(255,255,255,0.6)', fontSize: 10, fontWeight: 500,
-          letterSpacing: '0.01em',
-        }}>
+        <div style={{ position: 'absolute', top: 12, right: 12, color: 'rgba(255,255,255,0.55)', fontSize: 10, fontWeight: 500 }}>
           {item.duration}
         </div>
       )}
-
-      {/* Bottom content */}
-      <div style={{
-        position: 'absolute', bottom: 0, left: 0, right: 0,
-        padding: '0 14px 14px', zIndex: 2,
-      }}>
+      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '0 14px 14px' }}>
         <div style={{ fontSize: 12, fontWeight: 700, color: '#fff', lineHeight: 1.4, marginBottom: 10 }}>
           {item.title}
         </div>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             <div style={{
-              width: 20, height: 20, borderRadius: '50%',
-              background: item.avatarColor,
+              width: 20, height: 20, borderRadius: '50%', background: item.avatarColor,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 7, fontWeight: 700, color: '#fff', flexShrink: 0,
+              fontSize: 7, fontWeight: 700, color: '#fff',
             }}>
               {item.initials}
             </div>
@@ -334,94 +406,61 @@ function PortraitCard({ item, onClick }: { item: CaseItem; onClick: (c: CaseItem
   );
 }
 
-// ─── Landscape Card (16:9) ────────────────────────────────────────────────────
+// ─── Landscape Card ───────────────────────────────────────────────────────────
 
 function LandscapeCard({ item, onClick, dark }: { item: CaseItem; onClick: (c: CaseItem) => void; dark?: boolean }) {
   const { ref, tilt, active, onMouseMove, onMouseLeave } = use3DTilt(6);
   const [hovered, setHovered] = useState(false);
-
   return (
     <div
-      ref={ref}
-      onClick={() => onClick(item)}
+      ref={ref} onClick={() => onClick(item)}
       onMouseMove={(e) => { onMouseMove(e); setHovered(true); }}
       onMouseLeave={() => { onMouseLeave(); setHovered(false); }}
       style={{
-        flexShrink: 0, width: 292, borderRadius: 18, overflow: 'hidden',
-        cursor: 'pointer', position: 'relative',
+        flexShrink: 0, width: 292, borderRadius: 18, overflow: 'hidden', cursor: 'pointer',
         transform: `perspective(900px) rotateX(${tilt.x * 0.55}deg) rotateY(${tilt.y * 0.55}deg) scale(${active ? 1.025 : 1})`,
-        transition: active
-          ? 'transform 0.1s ease, box-shadow 0.15s ease'
-          : 'transform 0.55s cubic-bezier(0.23,1,0.32,1), box-shadow 0.4s ease',
-        boxShadow: active
-          ? `0 20px 48px rgba(0,0,0,${dark ? 0.6 : 0.28})`
-          : `0 6px 20px rgba(0,0,0,${dark ? 0.4 : 0.14})`,
+        transition: active ? 'transform 0.08s ease, box-shadow 0.15s ease' : 'transform 0.55s cubic-bezier(0.23,1,0.32,1), box-shadow 0.4s ease',
+        boxShadow: active ? `0 20px 48px rgba(0,0,0,${dark ? 0.6 : 0.28})` : `0 6px 20px rgba(0,0,0,${dark ? 0.4 : 0.14})`,
         willChange: 'transform',
       }}
     >
-      {/* Thumbnail */}
       <div style={{
         width: '100%', aspectRatio: '16/9',
-        backgroundImage: `
-          linear-gradient(180deg, rgba(0,0,0,0) 40%, rgba(0,0,0,0.72) 100%),
-          url(https://picsum.photos/seed/${item.seed}/584/328)
-        `,
-        backgroundSize: 'cover', backgroundPosition: 'center',
-        position: 'relative', overflow: 'hidden',
+        backgroundImage: `linear-gradient(180deg, rgba(0,0,0,0) 40%, rgba(0,0,0,0.72) 100%), url(https://picsum.photos/seed/${item.seed}/584/328)`,
+        backgroundSize: 'cover', backgroundPosition: 'center', position: 'relative', overflow: 'hidden',
       }}>
-        {/* Specular */}
         <div style={{
           position: 'absolute', inset: 0, pointerEvents: 'none',
-          background: `radial-gradient(circle at ${50 + tilt.y * 4}% ${50 - tilt.x * 4}%, rgba(255,255,255,0.1) 0%, transparent 65%)`,
-          transition: 'background 0.1s ease',
+          background: `radial-gradient(circle at ${50 + tilt.y * 4}% ${50 - tilt.x * 4}%, rgba(255,255,255,0.09) 0%, transparent 65%)`,
+          transition: 'background 0.08s ease',
         }} />
-
-        {/* Duration */}
         {item.duration && (
-          <div style={{
-            position: 'absolute', bottom: 10, right: 10,
-            color: 'rgba(255,255,255,0.6)', fontSize: 10, fontWeight: 500,
-          }}>
+          <div style={{ position: 'absolute', bottom: 10, right: 10, color: 'rgba(255,255,255,0.55)', fontSize: 10, fontWeight: 500 }}>
             {item.duration}
           </div>
         )}
-
-        {/* Views */}
-        <div style={{
-          position: 'absolute', bottom: 10, left: 10,
-          color: 'rgba(255,255,255,0.4)', fontSize: 9,
-          display: 'flex', alignItems: 'center', gap: 3,
-        }}>
+        <div style={{ position: 'absolute', bottom: 10, left: 10, color: 'rgba(255,255,255,0.35)', fontSize: 9, display: 'flex', alignItems: 'center', gap: 3 }}>
           <Eye size={9} /> {item.views}
         </div>
-
-        {/* Play hover */}
         <div style={{
-          position: 'absolute', inset: 0,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          opacity: hovered ? 1 : 0, transition: 'opacity 0.2s ease',
-          pointerEvents: 'none',
+          position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
+          opacity: hovered ? 1 : 0, transition: 'opacity 0.2s ease', pointerEvents: 'none',
         }}>
           <div style={{
-            width: 46, height: 46, borderRadius: '50%',
-            background: 'rgba(255,255,255,0.85)',
+            width: 44, height: 44, borderRadius: '50%', background: 'rgba(255,255,255,0.85)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             transform: hovered ? 'scale(1)' : 'scale(0.75)', transition: 'transform 0.2s ease',
           }}>
-            <Play size={17} fill="#111" stroke="none" style={{ marginLeft: 2 }} />
+            <Play size={16} fill="#111" stroke="none" style={{ marginLeft: 2 }} />
           </div>
         </div>
       </div>
-
-      {/* Info row */}
       <div style={{
-        padding: '12px 14px 13px',
-        background: dark ? '#161616' : '#fff',
+        padding: '11px 14px 13px', background: dark ? '#161616' : '#fff',
         display: 'flex', gap: 10, alignItems: 'flex-start',
       }}>
         <div style={{
-          width: 34, height: 34, borderRadius: '50%',
-          background: item.avatarColor,
+          width: 33, height: 33, borderRadius: '50%', background: item.avatarColor,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           fontSize: 10, fontWeight: 700, color: '#fff', flexShrink: 0,
         }}>
@@ -429,16 +468,133 @@ function LandscapeCard({ item, onClick, dark }: { item: CaseItem; onClick: (c: C
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{
-            fontSize: 12.5, fontWeight: 700,
-            color: dark ? '#fff' : '#111',
+            fontSize: 12.5, fontWeight: 700, color: dark ? '#fff' : '#111',
             lineHeight: 1.35, marginBottom: 3,
             overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
           }}>
             {item.title}
           </div>
-          <div style={{ fontSize: 10.5, color: dark ? 'rgba(255,255,255,0.35)' : '#999', fontWeight: 400 }}>
+          <div style={{ fontSize: 10.5, color: dark ? 'rgba(255,255,255,0.32)' : '#999' }}>
             {item.creator.split(' ')[0]} · {item.spec}
           </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Bento Card ───────────────────────────────────────────────────────────────
+
+function BentoCard({ item, onClick }: { item: CaseItem; onClick: (c: CaseItem) => void }) {
+  const { ref, tilt, active, onMouseMove, onMouseLeave } = use3DTilt(7);
+  return (
+    <div
+      ref={ref} onClick={() => onClick(item)}
+      onMouseMove={onMouseMove} onMouseLeave={onMouseLeave}
+      style={{
+        width: '100%', height: '100%', borderRadius: 18,
+        overflow: 'hidden', cursor: 'pointer', position: 'relative',
+        backgroundImage: `
+          linear-gradient(to bottom, rgba(0,0,0,0.04) 20%, rgba(0,0,0,0.82) 100%),
+          url(https://picsum.photos/seed/${item.seed}/600/500)
+        `,
+        backgroundSize: 'cover', backgroundPosition: 'center',
+        transform: `perspective(800px) rotateX(${tilt.x * 0.7}deg) rotateY(${tilt.y * 0.7}deg) scale(${active ? 1.02 : 1})`,
+        transition: active ? 'transform 0.08s ease, box-shadow 0.15s ease' : 'transform 0.55s cubic-bezier(0.23,1,0.32,1), box-shadow 0.4s ease',
+        boxShadow: active ? '0 18px 40px rgba(0,0,0,0.32)' : '0 6px 20px rgba(0,0,0,0.16)',
+        willChange: 'transform',
+      }}
+    >
+      <div style={{
+        position: 'absolute', inset: 0, pointerEvents: 'none',
+        background: `radial-gradient(circle at ${50 + tilt.y * 3}% ${50 - tilt.x * 3}%, rgba(255,255,255,0.07) 0%, transparent 65%)`,
+        transition: 'background 0.08s ease',
+      }} />
+      {item.duration && (
+        <div style={{ position: 'absolute', top: 12, right: 12, color: 'rgba(255,255,255,0.5)', fontSize: 10, fontWeight: 500 }}>
+          {item.duration}
+        </div>
+      )}
+      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '0 14px 14px' }}>
+        <div style={{ fontSize: 11.5, fontWeight: 700, color: '#fff', lineHeight: 1.4, marginBottom: 8 }}>
+          {item.title}
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+            <div style={{
+              width: 18, height: 18, borderRadius: '50%', background: item.avatarColor,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: 6, fontWeight: 700, color: '#fff',
+            }}>
+              {item.initials}
+            </div>
+            <span style={{ fontSize: 9.5, color: 'rgba(255,255,255,0.5)' }}>
+              {item.creator.split(' ')[0]}
+            </span>
+          </div>
+          <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.32)', display: 'flex', alignItems: 'center', gap: 3 }}>
+            <Eye size={8} /> {item.views}
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Bento Section ────────────────────────────────────────────────────────────
+
+function BentoSection({ section, onCaseClick }: { section: Section; onCaseClick: (c: CaseItem) => void }) {
+  const { ref, visible } = useScrollReveal(0.05);
+  const [a, b, c] = section.cases;
+
+  return (
+    <div
+      ref={ref}
+      style={{
+        opacity: visible ? 1 : 0,
+        transform: visible ? 'translateY(0)' : 'translateY(28px)',
+        transition: 'opacity 0.55s ease, transform 0.55s cubic-bezier(0.16,1,0.3,1)',
+      }}
+    >
+      {/* Header */}
+      <div style={{
+        padding: '0 16px', marginBottom: 16,
+        display: 'flex', alignItems: 'flex-end', justifyContent: 'flex-start',
+        position: 'relative',
+      }}>
+        <span style={{
+          position: 'absolute', left: 12, bottom: -6,
+          fontSize: 88, fontWeight: 900, lineHeight: 1, letterSpacing: '-0.04em',
+          userSelect: 'none', pointerEvents: 'none',
+          color: 'rgba(0,0,0,0.04)',
+        }}>
+          {section.num}
+        </span>
+        <span style={{ fontSize: 20, fontWeight: 800, letterSpacing: '-0.03em', color: '#0D0D0D', position: 'relative' }}>
+          {section.genre}
+        </span>
+      </div>
+
+      {/* Bento grid */}
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: '2fr 1fr',
+        gap: 10,
+        padding: '0 16px',
+      }}>
+        {/* Top-left: landscape */}
+        <div style={{ aspectRatio: '4/3' }}>
+          <BentoCard item={a} onClick={onCaseClick} />
+        </div>
+
+        {/* Right: portrait, spans 2 rows */}
+        <div style={{ gridRow: '1 / span 2' }}>
+          <BentoCard item={b} onClick={onCaseClick} />
+        </div>
+
+        {/* Bottom-left: landscape */}
+        <div style={{ aspectRatio: '4/3' }}>
+          <BentoCard item={c} onClick={onCaseClick} />
         </div>
       </div>
     </div>
@@ -462,17 +618,15 @@ function SectionRow({ section, onCaseClick }: { section: Section; onCaseClick: (
         background: section.dark ? '#0D0D0D' : 'transparent',
       }}
     >
-      {/* Header */}
       <div style={{
         padding: '0 16px', marginBottom: 16,
-        display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between',
+        display: 'flex', alignItems: 'flex-end', justifyContent: 'flex-start',
         position: 'relative',
       }}>
-        {/* Large decorative number */}
         <span style={{
           position: 'absolute', left: 12, bottom: -6,
-          fontSize: 88, fontWeight: 900, lineHeight: 1,
-          letterSpacing: '-0.04em', userSelect: 'none', pointerEvents: 'none',
+          fontSize: 88, fontWeight: 900, lineHeight: 1, letterSpacing: '-0.04em',
+          userSelect: 'none', pointerEvents: 'none',
           color: section.dark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.04)',
         }}>
           {section.num}
@@ -484,17 +638,8 @@ function SectionRow({ section, onCaseClick }: { section: Section; onCaseClick: (
         }}>
           {section.genre}
         </span>
-        <button style={{
-          border: 'none', background: 'none', cursor: 'pointer',
-          display: 'flex', alignItems: 'center', gap: 2,
-          color: section.dark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)',
-          fontSize: 12, fontWeight: 500, padding: 0, position: 'relative',
-        }}>
-          Все <ChevronRight size={13} />
-        </button>
       </div>
 
-      {/* Cards */}
       <div
         style={{ display: 'flex', gap: 10, overflowX: 'auto', paddingLeft: 16, paddingRight: 16, paddingBottom: 6 }}
         className="no-scrollbar"
@@ -524,11 +669,10 @@ function Modal({ item, onClose }: { item: CaseItem; onClose: () => void }) {
     <>
       <div onClick={onClose} style={{
         position: 'fixed', inset: 0, zIndex: 100,
-        background: 'rgba(0,0,0,0.7)',
+        background: 'rgba(0,0,0,0.72)',
         backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)',
         animation: 'fadeIn 0.2s ease',
       }} />
-
       <div className="modal-inner" style={{
         position: 'fixed', zIndex: 101,
         top: '50%', left: '50%', transform: 'translate(-50%,-50%)',
@@ -539,20 +683,12 @@ function Modal({ item, onClose }: { item: CaseItem; onClose: () => void }) {
         overflow: 'hidden', display: 'flex',
         animation: 'slideUp 0.32s cubic-bezier(0.16,1,0.3,1)',
       }}>
-        {/* Left: photo */}
         <div style={{
           flex: '0 0 52%', minHeight: 500,
-          backgroundImage: `
-            linear-gradient(160deg, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.88) 100%),
-            url(https://picsum.photos/seed/${item.seed}/700/800)
-          `,
-          backgroundSize: 'cover', backgroundPosition: 'center',
-          position: 'relative',
+          backgroundImage: `linear-gradient(160deg, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.88) 100%), url(https://picsum.photos/seed/${item.seed}/700/800)`,
+          backgroundSize: 'cover', backgroundPosition: 'center', position: 'relative',
         }}>
-          <div style={{
-            position: 'absolute', inset: 0,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}>
+          <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <div style={{
               width: 64, height: 64, borderRadius: '50%',
               background: 'rgba(255,255,255,0.12)',
@@ -568,21 +704,12 @@ function Modal({ item, onClose }: { item: CaseItem; onClose: () => void }) {
             padding: '60px 26px 26px',
             background: 'linear-gradient(to top, rgba(0,0,0,0.82) 0%, transparent 100%)',
           }}>
-            <div style={{ fontSize: 19, fontWeight: 700, color: '#fff', lineHeight: 1.3 }}>
-              {item.title}
-            </div>
-            <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.45)', marginTop: 6 }}>
-              {item.creator} · {item.city}
-            </div>
+            <div style={{ fontSize: 19, fontWeight: 700, color: '#fff', lineHeight: 1.3 }}>{item.title}</div>
+            <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.45)', marginTop: 6 }}>{item.creator} · {item.city}</div>
           </div>
         </div>
 
-        {/* Right: info */}
-        <div style={{
-          flex: 1, padding: 32, overflowY: 'auto',
-          display: 'flex', flexDirection: 'column', gap: 24,
-        }}>
-          {/* Close */}
+        <div style={{ flex: 1, padding: 32, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 24 }}>
           <button onClick={onClose} style={{
             position: 'absolute', top: 16, right: 16,
             width: 34, height: 34, borderRadius: '50%',
@@ -593,19 +720,16 @@ function Modal({ item, onClose }: { item: CaseItem; onClose: () => void }) {
             <X size={14} />
           </button>
 
-          {/* Views */}
           <div>
             <div style={{ fontSize: 50, fontWeight: 900, color: '#0D0D0D', letterSpacing: '-0.04em', lineHeight: 1 }}>
               {item.views}
             </div>
-            <div style={{ fontSize: 12, color: '#BBBBBB', marginTop: 3, fontWeight: 400 }}>просмотров</div>
+            <div style={{ fontSize: 12, color: '#CCC', marginTop: 3 }}>просмотров</div>
           </div>
 
-          {/* Author */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <div style={{
-              width: 46, height: 46, borderRadius: '50%',
-              background: item.avatarColor,
+              width: 46, height: 46, borderRadius: '50%', background: item.avatarColor,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               fontSize: 13, fontWeight: 700, color: '#fff', flexShrink: 0,
             }}>
@@ -617,18 +741,14 @@ function Modal({ item, onClose }: { item: CaseItem; onClose: () => void }) {
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
               {[1,2,3,4,5].map((i) => (
-                <Star key={i} size={11}
-                  fill={i <= Math.round(item.rating) ? '#C8A96E' : 'none'}
-                  stroke={i <= Math.round(item.rating) ? '#C8A96E' : '#DDD'} />
+                <Star key={i} size={11} fill={i <= Math.round(item.rating) ? '#C8A96E' : 'none'} stroke={i <= Math.round(item.rating) ? '#C8A96E' : '#DDD'} />
               ))}
               <span style={{ fontSize: 11.5, color: '#AAA', marginLeft: 4 }}>{item.rating}</span>
             </div>
           </div>
 
-          {/* Divider */}
           <div style={{ height: 1, background: '#F0F0EE' }} />
 
-          {/* Task & Result */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             <div>
               <div style={{ fontSize: 10, fontWeight: 700, color: '#CCC', textTransform: 'uppercase', letterSpacing: '0.09em', marginBottom: 6 }}>Задача</div>
@@ -640,33 +760,24 @@ function Modal({ item, onClose }: { item: CaseItem; onClose: () => void }) {
             </div>
           </div>
 
-          {/* Divider */}
           <div style={{ height: 1, background: '#F0F0EE' }} />
 
-          {/* Team */}
           <div>
             <div style={{ fontSize: 10, fontWeight: 700, color: '#CCC', textTransform: 'uppercase', letterSpacing: '0.09em', marginBottom: 12 }}>Команда</div>
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
               {['Сценарист', 'Оператор', 'Монтаж'].map((role) => (
-                <span key={role} style={{
-                  background: '#F5F5F3', color: '#555',
-                  borderRadius: 9, fontSize: 12, fontWeight: 500,
-                  padding: '6px 14px', border: '1px solid #EEEEED',
-                }}>
+                <span key={role} style={{ background: '#F5F5F3', color: '#555', borderRadius: 9, fontSize: 12, fontWeight: 500, padding: '6px 14px', border: '1px solid #EEEEED' }}>
                   {role}
                 </span>
               ))}
             </div>
           </div>
 
-          {/* CTA */}
           <div style={{ marginTop: 'auto', paddingTop: 4 }}>
             <button style={{
-              width: '100%', height: 52,
-              background: '#0D0D0D', color: '#fff',
-              border: 'none', borderRadius: 16,
-              fontSize: 15, fontWeight: 700, cursor: 'pointer',
-              letterSpacing: '-0.01em',
+              width: '100%', height: 52, background: '#0D0D0D', color: '#fff',
+              border: 'none', borderRadius: 16, fontSize: 15, fontWeight: 700,
+              cursor: 'pointer', letterSpacing: '-0.01em',
             }}>
               Нанять автора → Telegram
             </button>
@@ -702,11 +813,10 @@ export default function HomePage() {
         transition: 'filter 0.25s ease',
         pointerEvents: selectedCase ? 'none' : 'auto',
       }}>
-        {/* ── HEADER ─────────────────────────────────────────────────── */}
+        {/* ── HEADER ────────────────────────────────────────────────── */}
         <header style={{
           position: 'sticky', top: 0, zIndex: 50, height: 56,
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          padding: '0 16px',
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 16px',
           background: scrolled ? 'rgba(245,245,243,0.9)' : '#F5F5F3',
           backdropFilter: scrolled ? 'blur(20px)' : 'none',
           WebkitBackdropFilter: scrolled ? 'blur(20px)' : 'none',
@@ -717,45 +827,37 @@ export default function HomePage() {
             CH
           </span>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <button style={{
-              width: 36, height: 36, borderRadius: '50%',
-              border: 'none', background: 'rgba(0,0,0,0.06)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
-            }}>
+            <button style={{ width: 36, height: 36, borderRadius: '50%', border: 'none', background: 'rgba(0,0,0,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
               <Search size={16} color="#444" />
             </button>
-            <button style={{
-              width: 36, height: 36, borderRadius: '50%',
-              border: 'none', background: 'rgba(0,0,0,0.06)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              cursor: 'pointer', position: 'relative',
-            }}>
+            <button style={{ width: 36, height: 36, borderRadius: '50%', border: 'none', background: 'rgba(0,0,0,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', position: 'relative' }}>
               <Bell size={16} color="#444" />
-              <div style={{
-                position: 'absolute', top: 8, right: 8,
-                width: 6, height: 6, borderRadius: '50%',
-                background: '#0D0D0D', border: '1.5px solid #F5F5F3',
-              }} />
+              <div style={{ position: 'absolute', top: 8, right: 8, width: 6, height: 6, borderRadius: '50%', background: '#0D0D0D', border: '1.5px solid #F5F5F3' }} />
             </button>
-            <div style={{
-              width: 36, height: 36, borderRadius: '50%',
-              background: '#3A4A5C',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 11, fontWeight: 700, color: '#fff', cursor: 'pointer',
-            }}>
+            <div style={{ width: 36, height: 36, borderRadius: '50%', background: '#3A4A5C', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: '#fff', cursor: 'pointer' }}>
               AK
             </div>
           </div>
         </header>
 
-        {/* ── CONTENT ────────────────────────────────────────────────── */}
+        {/* ── CONTENT ───────────────────────────────────────────────── */}
         <main style={{ paddingBottom: 110 }}>
+          {/* Hero carousel */}
           <div style={{ padding: '14px 0 30px' }}>
-            <HeroCard item={HERO} onClick={setSelectedCase} />
+            <HeroCarousel items={HERO_ITEMS} onCaseClick={setSelectedCase} />
           </div>
+
+          {/* Sections — ticker injected between youtube and music */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 34 }}>
-            {SECTIONS.map((section) => (
-              <SectionRow key={section.id} section={section} onCaseClick={setSelectedCase} />
+            {SECTIONS.map((section, i) => (
+              <>
+                {i === 2 && <Ticker key="ticker" />}
+                {section.layout === 'bento' ? (
+                  <BentoSection key={section.id} section={section} onCaseClick={setSelectedCase} />
+                ) : (
+                  <SectionRow key={section.id} section={section} onCaseClick={setSelectedCase} />
+                )}
+              </>
             ))}
           </div>
         </main>
