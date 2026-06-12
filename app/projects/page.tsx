@@ -108,16 +108,16 @@ function JobCard({ job, index }: { job: JobPosting; index: number }) {
           {job.brandInitials}
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 5, flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 5, flexWrap: 'wrap' }}>
             {job.isNew && (
-              <span style={{ fontSize: 8.5, fontWeight: 800, letterSpacing: '0.07em', textTransform: 'uppercase', color: '#fff', background: '#16A34A', borderRadius: 100, padding: '2px 7px' }}>Новое</span>
+              <span style={{ fontSize: 8.5, fontWeight: 800, letterSpacing: '0.07em', textTransform: 'uppercase', color: '#fff', background: 'rgba(255,255,255,0.15)', borderRadius: 100, padding: '2px 7px' }}>Новое</span>
             )}
             {job.isUrgent && (
-              <span style={{ fontSize: 8.5, fontWeight: 800, letterSpacing: '0.07em', textTransform: 'uppercase', color: '#fff', background: '#DC2626', borderRadius: 100, padding: '2px 7px', display: 'flex', alignItems: 'center', gap: 3 }}>
-                <Zap size={7} fill="#fff" stroke="none" />Срочно
+              <span style={{ fontSize: 8.5, fontWeight: 800, letterSpacing: '0.07em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)', background: 'rgba(255,255,255,0.08)', borderRadius: 100, padding: '2px 7px', display: 'flex', alignItems: 'center', gap: 3 }}>
+                <Zap size={7} fill="rgba(255,255,255,0.5)" stroke="none" />Срочно
               </span>
             )}
-            <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase', color: job.typeColor, background: job.typeColor + '22', borderRadius: 100, padding: '2px 8px' }}>{job.type}</span>
+            <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)', background: 'rgba(255,255,255,0.1)', borderRadius: 100, padding: '2px 8px' }}>{job.type}</span>
           </div>
           <div style={{ fontSize: 15, fontWeight: 800, color: '#fff', letterSpacing: '-0.03em', lineHeight: 1.25 }}>{job.title}</div>
           <div style={{ fontSize: 11.5, color: 'rgba(255,255,255,0.38)', fontWeight: 500, marginTop: 4 }}>{job.brand}</div>
