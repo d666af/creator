@@ -2,13 +2,14 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { Play, Eye, Search, Bell, Home, Users, Briefcase, User } from 'lucide-react';
+import { Play, Eye, Search, Bell } from 'lucide-react';
 import {
   type CaseItem, type Section,
   SECTIONS, HERO_ITEMS, TICKER_ITEMS,
   ytThumb, ytMaxThumb,
 } from '@/lib/data';
 import { SearchOverlay } from '@/app/components/SearchOverlay';
+import { BottomNav } from '@/app/components/BottomNav';
 
 // ─── YouTube URLs ─────────────────────────────────────────────────────────────
 
@@ -107,31 +108,6 @@ function useCardInteractions(intensity = 10) {
   };
 
   return { ref, iframeRef, tilt, active, inView, preview, onMouseMove, onMouseEnter, onMouseLeave, onIframeLoad };
-}
-
-// ─── Bottom Nav ───────────────────────────────────────────────────────────────
-
-const NAV = [
-  { id: 'feed', label: 'Лента', Icon: Home },
-  { id: 'creators', label: 'Авторы', Icon: Users },
-  { id: 'projects', label: 'Проекты', Icon: Briefcase },
-  { id: 'profile', label: 'Профиль', Icon: User },
-] as const;
-
-function BottomNav({ active, onChange }: { active: string; onChange: (s: string) => void }) {
-  return (
-    <nav style={{ position: 'fixed', bottom: 14, left: 12, right: 12, zIndex: 100, background: 'rgba(14,14,14,0.9)', backdropFilter: 'blur(28px)', WebkitBackdropFilter: 'blur(28px)', borderRadius: 28, padding: '6px 6px', display: 'flex', boxShadow: '0 12px 48px rgba(0,0,0,0.4), inset 0 0.5px 0 rgba(255,255,255,0.07)' }}>
-      {NAV.map(({ id, label, Icon }) => {
-        const on = active === id;
-        return (
-          <button key={id} onClick={() => onChange(id)} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, border: 'none', background: on ? 'rgba(255,255,255,0.08)' : 'transparent', borderRadius: 22, padding: '8px 0', cursor: 'pointer', transition: 'background 0.2s ease' }}>
-            <Icon size={21} color={on ? '#fff' : 'rgba(255,255,255,0.3)'} strokeWidth={on ? 2 : 1.5} />
-            <span style={{ fontSize: 9.5, fontWeight: on ? 600 : 400, color: on ? '#fff' : 'rgba(255,255,255,0.3)' }}>{label}</span>
-          </button>
-        );
-      })}
-    </nav>
-  );
 }
 
 // ─── Ticker ───────────────────────────────────────────────────────────────────
@@ -447,7 +423,6 @@ function SectionRow({ section, onCaseClick }: { section: Section; onCaseClick: (
 
 export default function HomePage() {
   const router = useRouter();
-  const [activeNav, setActiveNav] = useState('feed');
   const [scrolled, setScrolled] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
 
@@ -506,7 +481,7 @@ export default function HomePage() {
         </main>
       </div>
 
-      <BottomNav active={activeNav} onChange={setActiveNav} />
+      <BottomNav />
 
       {searchOpen && <SearchOverlay onClose={() => setSearchOpen(false)} />}
     </>

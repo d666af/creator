@@ -318,3 +318,37 @@ export function getBrowseItems(sectionId: string, count = 24): BrowseItem[] {
   }
   return items;
 }
+
+// ─── Creator profiles ─────────────────────────────────────────────────────────
+
+export type CreatorProfile = {
+  name: string;
+  initials: string;
+  avatarColor: string;
+  spec: string;
+  city: string;
+  isPro: boolean;
+  rating: number;
+  totalViews: number;
+  caseCount: number;
+  cases: CaseItem[];
+};
+
+export function getCreatorProfiles(): CreatorProfile[] {
+  const map = new Map<string, CreatorProfile>();
+  for (const c of ALL_CASES) {
+    if (!map.has(c.creator)) {
+      map.set(c.creator, {
+        name: c.creator, initials: c.initials, avatarColor: c.avatarColor,
+        spec: c.spec, city: c.city, isPro: c.isPro,
+        rating: c.rating, totalViews: 0, caseCount: 0, cases: [],
+      });
+    }
+    const p = map.get(c.creator)!;
+    p.totalViews += c.viewsNum;
+    p.caseCount++;
+    p.cases.push(c);
+    if (c.rating > p.rating) p.rating = c.rating;
+  }
+  return [...map.values()];
+}
