@@ -160,7 +160,8 @@ function CreatorCard({ creator, index }: { creator: CreatorProfile; index: numbe
 
 export default function CreatorsPage() {
   const inputRef = useRef<HTMLInputElement>(null);
-  const [scrolled, setScrolled]     = useState(false);
+  const headerRef = useRef<HTMLDivElement>(null);
+  const [headerH, setHeaderH]       = useState(0);
   const [query, setQuery]           = useState('');
   const [placeholderIdx, setPHIdx]  = useState(0);
   const [selSpec, setSelSpec]       = useState<string | null>(null);
@@ -169,9 +170,13 @@ export default function CreatorsPage() {
   const fadeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    const h = () => setScrolled(window.scrollY > 4);
-    window.addEventListener('scroll', h, { passive: true });
-    return () => window.removeEventListener('scroll', h);
+    const measure = () => {
+      if (headerRef.current) setHeaderH(headerRef.current.offsetHeight);
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    if (headerRef.current) ro.observe(headerRef.current);
+    return () => ro.disconnect();
   }, []);
 
   // Cycling placeholder when input empty
@@ -214,11 +219,11 @@ export default function CreatorsPage() {
   const resetAll = () => { setSelSpec(null); setSelCity(null); setQuery(''); };
 
   return (
-    <div style={{ background: '#F5F5F3', minHeight: '100vh', paddingBottom: 100 }}>
+    <div style={{ background: '#F5F5F3', minHeight: '100vh', paddingBottom: 100, paddingTop: headerH }}>
 
-      {/* ── Sticky header ── */}
-      <div style={{
-        position: 'sticky', top: 0, zIndex: 20,
+      {/* ── Fixed header ── */}
+      <div ref={headerRef} style={{
+        position: 'fixed', top: 0, left: 0, right: 0, zIndex: 20,
         background: 'rgba(245,245,243,0.94)',
         backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
         borderBottom: '1px solid rgba(0,0,0,0.05)',
