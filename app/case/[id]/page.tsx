@@ -3,7 +3,7 @@
 import { use, useState, useEffect, useRef, useCallback, type ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Share2, Play, Pause, Volume2, VolumeX, Maximize, Eye, Star, Send } from 'lucide-react';
-import { type CaseItem, ALL_CASES, findCase, ytMaxThumb, ytThumb } from '@/lib/data';
+import { type CaseItem, ALL_CASES, findCase, findCaseSection, ytMaxThumb, ytThumb, ytPortraitThumb } from '@/lib/data';
 
 // ─── YouTube IFrame API types ─────────────────────────────────────────────────
 
@@ -22,7 +22,7 @@ function formatTime(s: number) {
   return `${Math.floor(s / 60)}:${Math.floor(s % 60).toString().padStart(2, '0')}`;
 }
 
-function CustomPlayer({ videoId, thumbnailUrl }: { videoId: string; thumbnailUrl: string }) {
+function CustomPlayer({ videoId, thumbnailUrl, isPortrait }: { videoId: string; thumbnailUrl: string; isPortrait?: boolean }) {
   const playerId = `yt-${videoId}`;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const playerRef = useRef<any>(null);
@@ -154,13 +154,31 @@ function CustomPlayer({ videoId, thumbnailUrl }: { videoId: string; thumbnailUrl
     <div
       ref={wrapperRef}
       onMouseMove={handleWrapperMouseMove}
-      style={{ position: 'relative', width: '100%', aspectRatio: '16/9', background: '#000', cursor: started ? 'none' : 'pointer' }}
+      style={{
+        position: 'relative', background: '#000', cursor: started ? 'none' : 'pointer',
+        ...(isPortrait
+          ? { width: '100%', maxWidth: 420, margin: '0 auto', aspectRatio: '9/16' }
+          : { width: '100%', aspectRatio: '16/9' }),
+      }}
     >
       {/* YT player target — replaced by iframe by the API */}
       <div
         id={playerId}
         style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}
       />
+
+      {/* Mask top — covers YouTube title/channel overlay */}
+      <div style={{
+        position: 'absolute', top: 0, left: 0, right: 0, height: 56,
+        background: 'linear-gradient(to bottom, #000 30%, transparent 100%)',
+        zIndex: 1, pointerEvents: 'none',
+      }} />
+      {/* Mask bottom-right — covers YouTube watermark */}
+      <div style={{
+        position: 'absolute', bottom: 0, right: 0, width: 120, height: 48,
+        background: 'linear-gradient(to top, #000 40%, transparent 100%)',
+        zIndex: 1, pointerEvents: 'none',
+      }} />
 
       {/* Thumbnail + initial play CTA (before user starts) */}
       {!started && (
@@ -357,6 +375,8 @@ export default function CasePage({ params }: { params: Promise<{ id: string }> }
   const router = useRouter();
 
   const item = findCase(id);
+  const section = findCaseSection(id);
+  const isPortrait = section?.layout === 'portrait';
   const [comment, setComment] = useState('');
 
   useEffect(() => { window.scrollTo(0, 0); }, []);
@@ -393,7 +413,11 @@ export default function CasePage({ params }: { params: Promise<{ id: string }> }
       </button>
 
       {/* ── Custom player ── */}
-      <CustomPlayer videoId={item.youtubeId} thumbnailUrl={ytMaxThumb(item.youtubeId)} />
+      <CustomPlayer
+        videoId={item.youtubeId}
+        thumbnailUrl={isPortrait ? ytPortraitThumb(item.youtubeId) : ytMaxThumb(item.youtubeId)}
+        isPortrait={isPortrait}
+      />
 
       {/* ── Content card ── */}
       <div style={{ background: '#fff', borderRadius: '24px 24px 0 0', marginTop: -20, position: 'relative', zIndex: 1, paddingTop: 10, animation: 'slideUp 0.5s cubic-bezier(0.16,1,0.3,1)' }}>

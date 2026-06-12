@@ -292,3 +292,7 @@ export const ALL_CASES = SECTIONS.flatMap(s => s.cases);
 export function findCase(id: string): CaseItem | undefined {
   return ALL_CASES.find(c => c.id === id);
 }
+
+export function findCaseSection(id: string): Section | undefined {
+  return SECTIONS.find(s => s.cases.some(c => c.id === id));
+}
