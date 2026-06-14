@@ -287,6 +287,8 @@ export const TICKER_ITEMS = [
   'ROAS x4.2 — кейс недели',
 ];
 
+export const creatorHref = (name: string) => `/creators/${encodeURIComponent(name)}`;
+
 export const ALL_CASES = SECTIONS.flatMap(s => s.cases);
 
 // ─── Job postings ─────────────────────────────────────────────────────────────

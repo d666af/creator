@@ -6,7 +6,7 @@ import { Play, Eye, Search, Bell } from 'lucide-react';
 import {
   type CaseItem, type Section,
   SECTIONS, HERO_ITEMS, TICKER_ITEMS,
-  ytThumb, ytMaxThumb,
+  ytThumb, ytMaxThumb, creatorHref,
 } from '@/lib/data';
 import { SearchOverlay } from '@/app/components/SearchOverlay';
 import { BottomNav } from '@/app/components/BottomNav';
@@ -131,6 +131,7 @@ function Ticker() {
 
 function HeroSlide({ item, onClick }: { item: CaseItem; onClick: (c: CaseItem) => void }) {
   const count = useCountUp(item.viewsNum, true);
+  const router = useRouter();
   return (
     <div onClick={() => onClick(item)} style={{ position: 'relative', width: '100%', aspectRatio: '16/9', cursor: 'pointer', background: '#000', animation: 'heroFade 0.45s cubic-bezier(0.16,1,0.3,1) forwards' }}>
       <div style={{ position: 'absolute', inset: 0, backgroundImage: `linear-gradient(170deg, rgba(0,0,0,0.04) 0%, rgba(0,0,0,0.9) 100%), url(${ytMaxThumb(item.youtubeId)})`, backgroundSize: 'cover', backgroundPosition: 'center' }} />
@@ -146,7 +147,7 @@ function HeroSlide({ item, onClick }: { item: CaseItem; onClick: (c: CaseItem) =
           <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.38)', fontWeight: 400, paddingBottom: 4 }}>просмотров</span>
         </div>
         <div style={{ fontSize: 16, fontWeight: 700, color: '#fff', lineHeight: 1.3, marginBottom: 12 }}>{item.title}</div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <div onClick={(e) => { e.stopPropagation(); router.push(creatorHref(item.creator)); }} style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}>
           <div style={{ width: 26, height: 26, borderRadius: '50%', background: item.avatarColor, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 8, fontWeight: 700, color: '#fff', flexShrink: 0 }}>{item.initials}</div>
           <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.7)', fontWeight: 500 }}>{item.creator}</span>
           <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)' }}>{item.spec}</span>
@@ -187,6 +188,7 @@ function HeroCarousel({ items, onCaseClick }: { items: CaseItem[]; onCaseClick: 
 
 function PortraitCard({ item, onClick }: { item: CaseItem; onClick: (c: CaseItem) => void }) {
   const { ref, iframeRef, tilt, active, inView, preview, onMouseMove, onMouseEnter, onMouseLeave, onIframeLoad } = useCardInteractions(12);
+  const router = useRouter();
 
   return (
     <div
@@ -243,7 +245,7 @@ function PortraitCard({ item, onClick }: { item: CaseItem; onClick: (c: CaseItem
       <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '0 14px 14px', zIndex: 2 }}>
         <div style={{ fontSize: 12, fontWeight: 700, color: '#fff', lineHeight: 1.4, marginBottom: 10 }}>{item.title}</div>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <div onClick={(e) => { e.stopPropagation(); router.push(creatorHref(item.creator)); }} style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer' }}>
             <div style={{ width: 20, height: 20, borderRadius: '50%', background: item.avatarColor, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 7, fontWeight: 700, color: '#fff' }}>{item.initials}</div>
             <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.55)' }}>{item.creator.split(' ')[0]}</span>
           </div>
@@ -258,6 +260,7 @@ function PortraitCard({ item, onClick }: { item: CaseItem; onClick: (c: CaseItem
 
 function LandscapeCard({ item, onClick, dark }: { item: CaseItem; onClick: (c: CaseItem) => void; dark?: boolean }) {
   const { ref, iframeRef, tilt, active, inView, preview, onMouseMove, onMouseEnter, onMouseLeave, onIframeLoad } = useCardInteractions(6);
+  const router = useRouter();
 
   return (
     <div
@@ -301,10 +304,10 @@ function LandscapeCard({ item, onClick, dark }: { item: CaseItem; onClick: (c: C
       </div>
 
       <div style={{ padding: '11px 14px 13px', background: dark ? '#161616' : '#fff', display: 'flex', gap: 10, alignItems: 'flex-start' }}>
-        <div style={{ width: 33, height: 33, borderRadius: '50%', background: item.avatarColor, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, color: '#fff', flexShrink: 0 }}>{item.initials}</div>
+        <div onClick={(e) => { e.stopPropagation(); router.push(creatorHref(item.creator)); }} style={{ width: 33, height: 33, borderRadius: '50%', background: item.avatarColor, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, color: '#fff', flexShrink: 0, cursor: 'pointer' }}>{item.initials}</div>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontSize: 12.5, fontWeight: 700, color: dark ? '#fff' : '#111', lineHeight: 1.35, marginBottom: 3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.title}</div>
-          <div style={{ fontSize: 10.5, color: dark ? 'rgba(255,255,255,0.32)' : '#999' }}>{item.creator.split(' ')[0]} · {item.spec}</div>
+          <div onClick={(e) => { e.stopPropagation(); router.push(creatorHref(item.creator)); }} style={{ fontSize: 10.5, color: dark ? 'rgba(255,255,255,0.32)' : '#999', cursor: 'pointer' }}>{item.creator.split(' ')[0]} · {item.spec}</div>
         </div>
       </div>
     </div>
@@ -315,6 +318,7 @@ function LandscapeCard({ item, onClick, dark }: { item: CaseItem; onClick: (c: C
 
 function BentoCard({ item, onClick }: { item: CaseItem; onClick: (c: CaseItem) => void }) {
   const { ref, iframeRef, tilt, active, inView, preview, onMouseMove, onMouseEnter, onMouseLeave, onIframeLoad } = useCardInteractions(7);
+  const router = useRouter();
 
   return (
     <div
@@ -353,7 +357,7 @@ function BentoCard({ item, onClick }: { item: CaseItem; onClick: (c: CaseItem) =
       <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '0 14px 14px' }}>
         <div style={{ fontSize: 11.5, fontWeight: 700, color: '#fff', lineHeight: 1.4, marginBottom: 8 }}>{item.title}</div>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+          <div onClick={(e) => { e.stopPropagation(); router.push(creatorHref(item.creator)); }} style={{ display: 'flex', alignItems: 'center', gap: 5, cursor: 'pointer' }}>
             <div style={{ width: 18, height: 18, borderRadius: '50%', background: item.avatarColor, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 6, fontWeight: 700, color: '#fff' }}>{item.initials}</div>
             <span style={{ fontSize: 9.5, color: 'rgba(255,255,255,0.5)' }}>{item.creator.split(' ')[0]}</span>
           </div>

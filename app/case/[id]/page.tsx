@@ -3,7 +3,7 @@
 import { use, useState, useEffect, useRef, useCallback, type ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Share2, Play, Pause, Volume2, VolumeX, Maximize, Eye, Star, Send } from 'lucide-react';
-import { type CaseItem, ALL_CASES, findCase, findCaseSection, ytMaxThumb, ytThumb } from '@/lib/data';
+import { type CaseItem, ALL_CASES, findCase, findCaseSection, ytMaxThumb, ytThumb, creatorHref } from '@/lib/data';
 
 // ─── YouTube IFrame API types ─────────────────────────────────────────────────
 
@@ -429,10 +429,10 @@ export default function CasePage({ params }: { params: Promise<{ id: string }> }
         {/* ── Author ── */}
         <div style={{ padding: '0 20px 22px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
-            <div style={{ width: 50, height: 50, borderRadius: '50%', background: item.avatarColor, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 700, color: '#fff', flexShrink: 0 }}>
+            <div onClick={() => router.push(creatorHref(item.creator))} style={{ width: 50, height: 50, borderRadius: '50%', background: item.avatarColor, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 700, color: '#fff', flexShrink: 0, cursor: 'pointer' }}>
               {item.initials}
             </div>
-            <div style={{ flex: 1 }}>
+            <div style={{ flex: 1, cursor: 'pointer' }} onClick={() => router.push(creatorHref(item.creator))}>
               <div style={{ fontSize: 15.5, fontWeight: 700, color: '#111' }}>{item.creator}</div>
               <div style={{ fontSize: 12, color: '#AAA', marginTop: 2 }}>{item.spec} · {item.city}</div>
             </div>

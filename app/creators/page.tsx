@@ -1,9 +1,10 @@
 'use client';
 
 import { useState, useMemo, useEffect, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import { Bell, X, Star, Eye, MapPin, Briefcase, Search } from 'lucide-react';
 import Fuse from 'fuse.js';
-import { getCreatorProfiles, ytThumb, type CreatorProfile, type CaseItem } from '@/lib/data';
+import { getCreatorProfiles, ytThumb, creatorHref, type CreatorProfile, type CaseItem } from '@/lib/data';
 import { BottomNav } from '@/app/components/BottomNav';
 
 // ── Data ──────────────────────────────────────────────────────────────────────
@@ -101,11 +102,13 @@ function ThumbStrip({ cases }: { cases: CaseItem[] }) {
 function CreatorCard({ creator, index }: { creator: CreatorProfile; index: number }) {
   const { ref, visible } = useInView(0.04);
   const views = useCountUp(creator.totalViews, visible);
+  const router = useRouter();
 
   return (
     <div
       ref={ref}
-      style={{
+      onClick={() => router.push(creatorHref(creator.name))}
+      style={{ cursor: 'pointer',
         borderRadius: 22, background: '#111', padding: '20px 20px 17px',
         boxShadow: '0 8px 32px rgba(0,0,0,0.18)',
         position: 'relative', overflow: 'hidden',
